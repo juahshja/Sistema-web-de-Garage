@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuevo Detalle de Repuesto</title>
+</head>
+<body>
+    <h1>Nuevo Detalle de Repuesto</h1>
+    
+    <form th:action="@{/detalles-repuestos/guardar}" method="post">
+        <!-- Orden -->
+        <div>
+            <label for="ordenId">Orden de Trabajo:</label><br>
+            <select id="ordenId" name="ordenId" required>
+                <option value="">-- Seleccionar Orden --</option>
+                <option th:each="orden : ${ordenes}" 
+                        th:value="${orden.idOrdenTrabajo}"
+                        th:text="'Orden #' + ${orden.idOrdenTrabajo}">
+                </option>
+            </select>
+        </div>
+        
+        <br>
+        
+        <!-- Repuesto -->
+        <div>
+            <label for="repuestoId">Repuesto:</label><br>
+            <select id="repuestoId" name="repuestoId" required>
+                <option value="">-- Seleccionar Repuesto --</option>
+                <option th:each="repuesto : ${repuestos}" 
+                        th:value="${repuesto.idRepuesto}"
+                        th:text="${repuesto.nombre}">
+                </option>
+            </select>
+        </div>
+        
+        <br>
+        
+        <!-- Cantidad -->
+        <div>
+            <label for="cantidad">Cantidad:</label><br>
+            <input type="number" id="cantidad" name="cantidad" 
+                   min="1" max="100" value="1" required>
+        </div>
+        
+        <br>
+        
+        <!-- Botones -->
+        <div>
+            <button type="submit">Guardar</button>
+            <a th:href="@{/detalles-repuestos}">Cancelar</a>
+        </div>
+    </form>
+</body>
+</html>

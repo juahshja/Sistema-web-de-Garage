@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle Factura</title>
+</head>
+<body>
+
+<h1>Detalle de Factura</h1>
+<a href="/facturas">⬅ Volver</a><br><br>
+
+<p><b>ID:</b> <span th:text="${factura.idFactura}"></span></p>
+<p><b>Número:</b> <span th:text="${factura.numeroFactura}"></span></p>
+<p><b>Subtotal:</b> <span th:text="${factura.subtotal}"></span></p>
+<p><b>IGV:</b> <span th:text="${factura.igv}"></span></p>
+<p><b>Total:</b> <span th:text="${factura.total}"></span></p>
+<p><b>Estado:</b> <span th:text="${factura.estado}"></span></p>
+
+<p><b>Fecha emisión:</b> <span th:text="${factura.fechaEmision}"></span></p>
+<p><b>Método pago:</b> <span th:text="${factura.metodoPago}"></span></p>
+<p><b>Observaciones:</b> <span th:text="${factura.observaciones}"></span></p>
+
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${repuesto.idRepuesto == null ? 'Registrar Repuesto' : 'Editar Repuesto'}"></title>
+</head>
+
+<body>
+
+<h1 th:text="${repuesto.idRepuesto == null ? 'Registrar Repuesto' : 'Editar Repuesto'}"></h1>
+
+<a href="/repuestos">⬅ Volver</a>
+<br><br>
+
+<form action="/repuestos/guardar" method="post">
+
+    <input type="hidden" name="idRepuesto" th:value="${repuesto.idRepuesto}">
+
+    <label>Nombre:</label><br>
+    <input type="text" name="nombre" th:value="${repuesto.nombre}" required><br><br>
+
+    <label>Descripción:</label><br>
+    <textarea name="descripcion" rows="3" th:text="${repuesto.descripcion}"></textarea><br><br>
+
+    <label>Código de Barras:</label><br>
+    <input type="text" name="codigoBarras" th:value="${repuesto.codigoBarras}"><br><br>
+
+    <label>Stock Actual:</label><br>
+    <input type="number" name="stockActual" th:value="${repuesto.stockActual}" required><br><br>
+
+    <label>Stock Mínimo:</label><br>
+    <input type="number" name="stockMinimo" th:value="${repuesto.stockMinimo}" required><br><br>
+
+    <label>Precio Costo:</label><br>
+    <input type="number" step="0.01" name="precioCosto" th:value="${repuesto.precioCosto}" required><br><br>
+
+    <label>Precio Venta:</label><br>
+    <input type="number" step="0.01" name="precioVenta" th:value="${repuesto.precioVenta}" required><br><br>
+
+    <label>Ubicación en almacén:</label><br>
+    <input type="text" name="ubicacionAlmacen" th:value="${repuesto.ubicacionAlmacen}"><br><br>
+
+    <label>Proveedor:</label><br>
+    <select name="proveedor.idProveedor">
+        <option value="">-- Seleccione --</option>
+
+        <option th:each="prov : ${proveedores}"
+                th:value="${prov.idProveedor}"
+                th:selected="${repuesto.proveedor != null && repuesto.proveedor.idProveedor == prov.idProveedor}"
+                th:text="${prov.razonSocial}">
+        </option>
+    </select>
+    <br><br>
+
+    <button type="submit">Guardar</button>
+
+</form>
+
+</body>
+</html>

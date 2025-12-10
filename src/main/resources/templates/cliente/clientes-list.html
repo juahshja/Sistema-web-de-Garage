@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Clientes</title>
+
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background: #f0f0f0;
+        }
+
+        .acciones a, .acciones form button {
+            margin-right: 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>Clientes Registrados</h1>
+
+<a href="/clientes/nuevo">➕ Registrar Nuevo Cliente</a>
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nombre Completo</th>
+            <th>DNI/RUC</th>
+            <th>Correo</th>
+            <th>Teléfono</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        <tr th:each="cliente : ${listaClientes}">
+            <td th:text="${cliente.idCliente}"></td>
+
+            <td th:text="${cliente.nombre + ' ' + cliente.apellidos}"></td>
+
+            <td th:text="${cliente.dniRuc}"></td>
+
+            <td th:text="${cliente.correo}"></td>
+
+            <td th:text="${cliente.telefono}"></td>
+
+            <td class="acciones">
+                <a th:href="@{'/clientes/editar/' + ${cliente.idCliente}}">✏ Editar</a>
+
+                <form th:action="@{'/clientes/eliminar/' + ${cliente.idCliente}}"
+                      method="post"
+                      style="display:inline;">
+                    <button type="submit" onclick="return confirm('¿Eliminar cliente?');">
+                        🗑 Eliminar
+                    </button>
+                </form>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+</body>
+</html>

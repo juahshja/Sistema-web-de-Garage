@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Repuestos</title>
+</head>
+<body>
+
+<h1>Repuestos</h1>
+
+<a href="/repuestos/nuevo">➕ Registrar Repuesto</a>
+<br><br>
+
+<form action="/repuestos/buscar" method="get">
+    <input type="text" name="nombre" placeholder="Buscar por nombre">
+    <button type="submit">Buscar</button>
+</form>
+
+<br>
+
+<table border="1" cellpadding="8">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Código Barras</th>
+            <th>Stock</th>
+            <th>Precio Venta</th>
+            <th>Proveedor</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        <tr th:each="rep : ${repuestos}">
+            <td th:text="${rep.idRepuesto}"></td>
+            <td th:text="${rep.nombre}"></td>
+            <td th:text="${rep.codigoBarras}"></td>
+            <td th:text="${rep.stockActual}"></td>
+            <td th:text="${rep.precioVenta}"></td>
+            <td th:text="${rep.proveedor != null ? rep.proveedor.razonSocial : 'Sin proveedor'}"></td>
+
+            <td>
+                <a th:href="@{/repuestos/editar(id=${rep.idRepuesto})}">✏ Editar</a>
+                |
+                <a th:href="@{/repuestos/eliminar(id=${rep.idRepuesto})}"
+                   onclick="return confirm('¿Seguro de eliminar este repuesto?')">🗑 Eliminar</a>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+</body>
+</html>

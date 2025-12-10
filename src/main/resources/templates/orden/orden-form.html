@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario Orden Trabajo</title>
+</head>
+<body>
+
+<h1 th:text="${orden.idOrdenTrabajo == null ? 'Registrar Orden de Trabajo' : 'Editar Orden de Trabajo'}"></h1>
+
+<a href="/ordenes">⬅ Volver a la lista</a>
+<br><br>
+
+<form action="/ordenes/guardar" method="post">
+    
+    <input type="hidden" name="idOrdenTrabajo" th:value="${orden.idOrdenTrabajo}">
+
+    <label>Vehículo:</label><br>
+    <select name="idVehiculo" required>
+        <option value="">Seleccione un vehículo</option>
+
+        <option th:each="v : ${vehiculos}"
+                th:value="${v.idVehiculo}"
+                th:text="${v.placa + ' - ' + v.marca + ' ' + v.modelo}"
+                th:selected="${orden.vehiculo != null && orden.vehiculo.idVehiculo == v.idVehiculo}">
+        </option>
+    </select>
+    <br><br>
+
+    <label>Descripción del Problema:</label><br>
+    <textarea name="descripcionProblema" rows="4" cols="40"
+              th:text="${orden.descripcionProblema}"></textarea>
+    <br><br>
+
+    <label>Estado:</label><br>
+    <select name="estado">
+        <option value="PENDIENTE" th:selected="${orden.estado == 'PENDIENTE'}">PENDIENTE</option>
+        <option value="DIAGNOSTICO" th:selected="${orden.estado == 'DIAGNOSTICO'}">DIAGNOSTICO</option>
+        <option value="COTIZACION" th:selected="${orden.estado == 'COTIZACION'}">COTIZACION</option>
+        <option value="APROBADO" th:selected="${orden.estado == 'APROBADO'}">APROBADO</option>
+        <option value="EN_PROCESO" th:selected="${orden.estado == 'EN_PROCESO'}">EN PROCESO</option>
+        <option value="FINALIZADO" th:selected="${orden.estado == 'FINALIZADO'}">FINALIZADO</option>
+        <option value="ENTREGADO" th:selected="${orden.estado == 'ENTREGADO'}">ENTREGADO</option>
+    </select>
+    <br><br>
+
+    <button type="submit">Guardar</button>
+</form>
+
+</body>
+</html>

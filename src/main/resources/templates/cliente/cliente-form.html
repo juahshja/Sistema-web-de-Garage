@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario Cliente</title>
+</head>
+<body>
+
+<h1 th:text="${cliente.idCliente == null} ? 'Registrar Cliente' : 'Editar Cliente'"></h1>
+
+<form th:action="@{/clientes/guardar}" th:object="${cliente}" method="post">
+
+    <input type="hidden" th:field="*{idCliente}">
+
+    <!-- Nombre -->
+    <label for="nombre">Nombre:</label>
+    <input id="nombre" type="text" th:field="*{nombre}" required>
+    <br><br>
+
+    <!-- Apellidos -->
+    <label for="apellidos">Apellidos:</label>
+    <input id="apellidos" type="text" th:field="*{apellidos}" required>
+    <br><br>
+
+    <!-- DNI/RUC -->
+    <label for="dniRuc">DNI/RUC:</label>
+    <input id="dniRuc" type="text" th:field="*{dniRuc}" required>
+    <br><br>
+
+    <!-- Correo -->
+    <label for="correo">Correo:</label>
+    <input id="correo" type="email" th:field="*{correo}">
+    <br><br>
+
+    <!-- Telefono -->
+    <label for="telefono">Teléfono:</label>
+    <input id="telefono" type="text" th:field="*{telefono}">
+    <br><br>
+
+    <!-- Error -->
+    <p th:if="${errorMensaje}" th:text="${errorMensaje}" style="color:red;"></p>
+
+    <button type="submit">Guardar</button>
+</form>
+
+<br>
+<a href="/clientes">⬅ Volver</a>
+
+</body>
+</html>

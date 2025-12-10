@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listado de Cotizaciones</title>
+</head>
+<body>
+
+<h1>Listado de Cotizaciones</h1>
+
+<a href="/cotizaciones/nuevo">➕ Nueva Cotización</a>
+
+<table border="1" cellpadding="8">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Número</th>
+            <th>Fecha</th>
+            <th>Total</th>
+            <th>Estado</th>
+            <th>Orden Trabajo</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        <tr th:each="cot : ${cotizaciones}">
+            <td th:text="${cot.idCotizacion}"></td>
+            <td th:text="${cot.numeroCotizacion}"></td>
+            <td th:text="${cot.fechaEmision}"></td>
+            <td th:text="${cot.total}"></td>
+            <td th:text="${cot.estado}"></td>
+            <td th:text="${cot.ordenTrabajo.idOrdenTrabajo}"></td>
+
+            <td>
+                <a th:href="@{'/cotizaciones/editar/' + ${cot.idCotizacion}}">✏ Editar</a>
+                |
+                <a th:href="@{'/cotizaciones/eliminar/' + ${cot.idCotizacion}}"
+                   onclick="return confirm('¿Eliminar cotización?')">🗑 Eliminar</a>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+</body>
+</html>

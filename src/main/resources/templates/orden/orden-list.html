@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Órdenes de Trabajo</title>
+</head>
+<body>
+
+<h1>Órdenes de Trabajo</h1>
+
+<a href="/ordenes/nuevo">➕ Nueva Orden de Trabajo</a>
+<br><br>
+
+<table border="1" cellpadding="8">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Fecha Recepción</th>
+            <th>Estado</th>
+            <th>Vehículo</th>
+            <th>Cliente</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        <tr th:each="orden : ${ordenes}">
+            <td th:text="${orden.idOrdenTrabajo}"></td>
+            <td th:text="${orden.fechaRecepcion}"></td>
+            <td th:text="${orden.estado}"></td>
+            <td th:text="${orden.vehiculo.placa}"></td>
+            <td th:text="${orden.vehiculo.cliente.nombre} + ' ' + ${orden.vehiculo.cliente.apellidos}"></td>
+
+            <td>
+                <a th:href="@{/ordenes/editar/{id}(id=${orden.idOrdenTrabajo})}">✏ Editar</a> |
+                <a th:href="@{/ordenes/eliminar/{id}(id=${orden.idOrdenTrabajo})}"
+                   onclick="return confirm('¿Eliminar esta orden?')">🗑 Eliminar</a>
+            </td>
+        </tr>
+    </tbody>
+
+</table>
+
+<br>
+<a href="/">⬅ Volver al inicio</a>
+
+</body>
+</html>

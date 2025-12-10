@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Facturas</title>
+</head>
+<body>
+
+<h1>Facturas</h1>
+
+<a href="/facturas/nuevo">➕ Nueva Factura</a>
+<br><br>
+
+<table border="1" cellpadding="8">
+    <tr>
+        <th>ID</th>
+        <th>N° Factura</th>
+        <th>Total</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+    </tr>
+
+    <tr th:each="f : ${facturas}">
+        <td th:text="${f.idFactura}"></td>
+        <td th:text="${f.numeroFactura}"></td>
+        <td th:text="${f.total}"></td>
+        <td th:text="${f.estado}"></td>
+
+        <td>
+            <a th:href="@{'/facturas/editar/' + ${f.idFactura}}">✏ Editar</a> |
+            <a th:href="@{'/facturas/detalle/' + ${f.idFactura}}">👁 Ver</a> |
+            <a th:href="@{'/facturas/eliminar/' + ${f.idFactura}}"
+               onclick="return confirm('¿Eliminar factura?')">🗑 Eliminar</a>
+        </td>
+    </tr>
+
+</table>
+
+</body>
+</html>

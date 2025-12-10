@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Proveedores</title>
+</head>
+<body>
+
+<h1>Proveedores</h1>
+
+<a href="/proveedores/nuevo">➕ Nuevo Proveedor</a>
+<br><br>
+
+<table border="1" cellpadding="8">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Razón Social</th>
+            <th>RUC</th>
+            <th>Teléfono</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        <tr th:each="prov : ${proveedores}">
+            <td th:text="${prov.idProveedor}"></td>
+            <td th:text="${prov.razonSocial}"></td>
+            <td th:text="${prov.ruc}"></td>
+            <td th:text="${prov.telefono}"></td>
+
+            <td th:text="${prov.activo ? 'Activo' : 'Inactivo'}"></td>
+
+            <td>
+                <a th:href="@{'/proveedores/editar/' + ${prov.idProveedor}}">✏ Editar</a> |
+                <a th:href="@{'/proveedores/eliminar/' + ${prov.idProveedor}}" onclick="return confirm('¿Eliminar proveedor?')">🗑 Eliminar</a> |
+
+                <span th:if="${prov.activo}">
+                    <a th:href="@{'/proveedores/desactivar/' + ${prov.idProveedor}}">🔒 Desactivar</a>
+                </span>
+                <span th:if="${!prov.activo}">
+                    <a th:href="@{'/proveedores/activar/' + ${prov.idProveedor}}">🔓 Activar</a>
+                </span>
+            </td>
+        </tr>
+    </tbody>
+
+</table>
+
+</body>
+</html>

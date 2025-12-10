@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario Vehículo</title>
+</head>
+<body>
+
+<h1 th:text="${vehiculo.idVehiculo} == null ? 'Registrar Vehículo' : 'Editar Vehículo'"></h1>
+
+<a href="/vehiculos">⬅ Volver a la lista</a>
+<br><br>
+
+<!-- Mostrar error -->
+<p th:if="${error}" style="color:red;" th:text="${error}"></p>
+
+<!-- FORMULARIO CON th:object -->
+<form th:action="@{/vehiculos/guardar}" th:object="${vehiculo}" method="post">
+
+    <!-- ID oculto -->
+    <input type="hidden" th:field="*{idVehiculo}" />
+
+    <label>Placa:</label><br>
+    <input type="text" th:field="*{placa}" required />
+    <br><br>
+
+    <label>Marca:</label><br>
+    <input type="text" th:field="*{marca}" required />
+    <br><br>
+
+    <label>Modelo:</label><br>
+    <input type="text" th:field="*{modelo}" required />
+    <br><br>
+
+    <label>Año de Fabricación:</label><br>
+    <input type="number" th:field="*{anoFabricacion}" min="1900" max="2100" required />
+    <br><br>
+
+    <label>Cliente:</label><br>
+    <select th:field="*{cliente.idCliente}" required>
+        <option value="" disabled>Seleccione un cliente</option>
+
+        <!-- Lista de clientes -->
+        <option th:each="cli : ${clientes}"
+                th:value="${cli.idCliente}"
+                th:text="${cli.nombre + ' ' + cli.apellidos}">
+        </option>
+    </select>
+
+    <br><br>
+
+    <button type="submit">Guardar</button>
+</form>
+
+</body>
+</html>

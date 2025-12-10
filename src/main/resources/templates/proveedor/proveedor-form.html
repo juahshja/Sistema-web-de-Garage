@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"><html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Formulario Proveedor</title>
+</head>
+<body>
+
+<h1 th:text="${proveedor.idProveedor == null ? 'Registrar Proveedor' : 'Editar Proveedor'}"></h1>
+
+<a href="/proveedores">⬅ Volver</a>
+<br><br>
+
+<p th:if="${error}" style="color:red;" th:text="${error}"></p>
+
+<form action="/proveedores/guardar" method="post">
+
+    <input type="hidden" name="idProveedor" th:value="${proveedor.idProveedor}">
+
+    <label>Razón Social:</label><br>
+    <input type="text" name="razonSocial" th:value="${proveedor.razonSocial}" required>
+    <br><br>
+
+    <label>Nombre Comercial:</label><br>
+    <input type="text" name="nombreComercial" th:value="${proveedor.nombreComercial}">
+    <br><br>
+
+    <label>RUC:</label><br>
+    <input type="text" name="ruc" th:value="${proveedor.ruc}" required maxlength="11">
+    <br><br>
+
+    <label>Dirección:</label><br>
+    <input type="text" name="direccion" th:value="${proveedor.direccion}">
+    <br><br>
+
+    <label>Teléfono:</label><br>
+    <input type="text" name="telefono" th:value="${proveedor.telefono}">
+    <br><br>
+
+    <label>Email:</label><br>
+    <input type="email" name="email" th:value="${proveedor.email}">
+    <br><br>
+
+    <label>Contacto (Nombre):</label><br>
+    <input type="text" name="contactoNombre" th:value="${proveedor.contactoNombre}">
+    <br><br>
+
+    <label>Contacto (Teléfono):</label><br>
+    <input type="text" name="contactoTelefono" th:value="${proveedor.contactoTelefono}">
+    <br><br>
+
+    <button type="submit">Guardar</button>
+
+</form>
+
+</body>
+</html>

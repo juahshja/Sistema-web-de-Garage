@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Vehículos</title>
+</head>
+<body>
+
+    <h1>Vehículos Registrados</h1>
+
+    <a href="/vehiculos/nuevo">➕ Registrar Vehículo</a>
+
+    <br><br>
+
+    <table border="1" cellpadding="8">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Placa</th>
+                <th>Marca</th>
+                <th>Modelo</th>
+                <th>Año</th>
+                <th>Cliente</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr th:each="veh : ${vehiculos}">
+                <td th:text="${veh.idVehiculo}"></td>
+                <td th:text="${veh.placa}"></td>
+                <td th:text="${veh.marca}"></td>
+                <td th:text="${veh.modelo}"></td>
+                <td th:text="${veh.anoFabricacion}"></td>
+                <td th:text="${veh.cliente.nombre + ' ' + veh.cliente.apellidos}"></td>
+                <td>
+                    <a th:href="@{'/vehiculos/editar/' + ${veh.idVehiculo}}">✏ Editar</a>
+                    &nbsp;|&nbsp;
+                    <a th:href="@{'/vehiculos/eliminar/' + ${veh.idVehiculo}}"
+                       onclick="return confirm('¿Eliminar este vehículo?');">
+                        🗑 Eliminar
+                    </a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+</body>
+</html>

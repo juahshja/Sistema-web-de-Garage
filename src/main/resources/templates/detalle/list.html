@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalles de Repuestos</title>
+</head>
+<body>
+    <h1>Detalles de Repuestos</h1>
+    
+    <!-- Mensajes -->
+    <div th:if="${mensaje}">
+        [[${mensaje}]]
+    </div>
+    
+    <!-- Enlace para crear nuevo -->
+    <p>
+        <a th:href="@{/detalles-repuestos/nuevo}">Nuevo Detalle</a> |
+        <a th:href="@{/ordenes}">Volver a Órdenes</a>
+    </p>
+    
+    <!-- Tabla básica -->
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Orden #</th>
+                <th>Repuesto</th>
+                <th>Cantidad</th>
+                <th>Precio Unitario</th>
+                <th>Subtotal</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="detalle : ${detalles}">
+                <td>[[${detalle.idDetalle}]]</td>
+                <td>[[${detalle.ordenTrabajo.idOrdenTrabajo}]]</td>
+                <td>[[${detalle.repuesto.nombre}]]</td>
+                <td>[[${detalle.cantidad}]]</td>
+                <td>[[${detalle.precioUnitario}]]</td>
+                <td>[[${detalle.subtotal}]]</td>
+                <td>
+                    <a th:href="@{/detalles-repuestos/eliminar/{id}(id=${detalle.idDetalle})}" 
+                       onclick="return confirm('¿Eliminar?')">
+                        Eliminar
+                    </a>
+                </td>
+            </tr>
+            
+            <!-- Si está vacío -->
+            <tr th:if="${detalles.isEmpty()}">
+                <td colspan="7">
+                    No hay detalles registrados.
+                    <a th:href="@{/detalles-repuestos/nuevo}">Crear el primero</a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <!-- Total general -->
+    <div th:if="${!detalles.isEmpty()}">
+        <p><strong>Total General: [[${totalGeneral}]]</strong></p>
+    </div>
+</body>
+</html>
