@@ -2,59 +2,461 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"><html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Formulario Proveedor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${proveedor.idProveedor == null ? 'Registrar Proveedor' : 'Editar Proveedor'}">Formulario Proveedor</title>
+    
+    <!-- Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- ESTILOS DE COLOR FORZADOS -->
+    <style>
+        /* Colores naranja FORZADOS */
+        .nav-orange {
+            background-color: #ea580c !important;
+            color: white !important;
+        }
+        
+        .btn-cancelar {
+            background: white !important;
+            color: #374151 !important;
+            border: 1px solid #d1d5db !important;
+            padding: 0.5rem 1.5rem !important;
+            border-radius: 0.5rem !important;
+            text-decoration: none !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            transition: all 0.2s !important;
+        }
+        
+        .btn-cancelar:hover {
+            background: #f9fafb !important;
+            border-color: #9ca3af !important;
+        }
+        
+        .btn-guardar {
+            background: linear-gradient(to right, #f97316, #ea580c) !important;
+            color: white !important;
+            padding: 0.5rem 1.5rem !important;
+            border-radius: 0.5rem !important;
+            border: none !important;
+            font-weight: 500 !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            cursor: pointer !important;
+            transition: all 0.2s !important;
+            box-shadow: 0 4px 6px rgba(249, 115, 22, 0.3) !important;
+        }
+        
+        .btn-guardar:hover {
+            background: linear-gradient(to right, #ea580c, #c2410c) !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 6px 8px rgba(249, 115, 22, 0.4) !important;
+        }
+        
+        .card-header-orange {
+            background: linear-gradient(to right, #f97316, #ea580c) !important;
+            color: white !important;
+        }
+        
+        .text-orange-light {
+            color: #ffedd5 !important;
+        }
+        
+        .border-orange-focus:focus {
+            border-color: #f97316 !important;
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.3) !important;
+        }
+        
+        .icon-orange {
+            color: #f97316 !important;
+        }
+        
+        /* Estilos básicos para estructura */
+        .bg-gray-50 {
+            background-color: #f9fafb;
+        }
+        
+        .min-h-screen {
+            min-height: 100vh;
+        }
+        
+        .shadow-lg {
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+        }
+        
+        .container {
+            width: 100%;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        @media (min-width: 768px) {
+            .container {
+                max-width: 768px;
+            }
+        }
+        
+        @media (min-width: 1024px) {
+            .container {
+                max-width: 1024px;
+            }
+        }
+        
+        @media (min-width: 1280px) {
+            .container {
+                max-width: 1280px;
+            }
+        }
+        
+        .flex {
+            display: flex;
+        }
+        
+        .justify-between {
+            justify-content: space-between;
+        }
+        
+        .items-center {
+            align-items: center;
+        }
+        
+        .px-4 {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+        
+        .py-3 {
+            padding-top: 0.75rem;
+            padding-bottom: 0.75rem;
+        }
+        
+        .py-8 {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+        
+        .max-w-4xl {
+            max-width: 56rem;
+        }
+        
+        .bg-white {
+            background-color: white;
+        }
+        
+        .rounded-lg {
+            border-radius: 0.5rem;
+        }
+        
+        .shadow-xl {
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+        }
+        
+        .border {
+            border: 1px solid #e5e7eb;
+        }
+        
+        .border-gray-200 {
+            border-color: #e5e7eb;
+        }
+        
+        .p-6 {
+            padding: 1.5rem;
+        }
+        
+        .grid {
+            display: grid;
+        }
+        
+        .grid-cols-1 {
+            grid-template-columns: 1fr;
+        }
+        
+        .gap-6 {
+            gap: 1.5rem;
+        }
+        
+        @media (min-width: 768px) {
+            .md\:grid-cols-2 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        .space-y-2 > * + * {
+            margin-top: 0.5rem;
+        }
+        
+        .block {
+            display: block;
+        }
+        
+        .text-sm {
+            font-size: 0.875rem;
+        }
+        
+        .font-medium {
+            font-weight: 500;
+        }
+        
+        .text-gray-700 {
+            color: #374151;
+        }
+        
+        .w-full {
+            width: 100%;
+        }
+        
+        .border-gray-300 {
+            border: 1px solid #d1d5db;
+        }
+        
+        .transition {
+            transition: all 0.2s;
+        }
+        
+        .duration-200 {
+            transition-duration: 200ms;
+        }
+        
+        .mt-6 {
+            margin-top: 1.5rem;
+        }
+        
+        .mt-8 {
+            margin-top: 2rem;
+        }
+        
+        .pt-6 {
+            padding-top: 1.5rem;
+        }
+        
+        .border-t {
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .flex-wrap {
+            flex-wrap: wrap;
+        }
+        
+        .justify-end {
+            justify-content: flex-end;
+        }
+        
+        .gap-4 {
+            gap: 1rem;
+        }
+        
+        .text-xs {
+            font-size: 0.75rem;
+        }
+        
+        .text-gray-500 {
+            color: #6b7280;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .bg-red-50 {
+            background-color: #fef2f2;
+        }
+        
+        .border-l-4 {
+            border-left: 4px solid #ef4444;
+        }
+        
+        .border-red-500 {
+            border-color: #ef4444;
+        }
+        
+        .mx-6 {
+            margin-left: 1.5rem;
+            margin-right: 1.5rem;
+        }
+        
+        .text-red-500 {
+            color: #ef4444;
+        }
+        
+        .text-red-700 {
+            color: #b91c1c;
+        }
+        
+        .overflow-hidden {
+            overflow: hidden;
+        }
+        
+        .mr-1, .mr-2, .mr-3 {
+            margin-right: 0.25rem;
+        }
+        .mr-2 { margin-right: 0.5rem; }
+        .mr-3 { margin-right: 0.75rem; }
+        
+        .ml-2 {
+            margin-left: 0.5rem;
+        }
+        
+        .text-xl {
+            font-size: 1.25rem;
+        }
+        
+        .text-2xl {
+            font-size: 1.5rem;
+        }
+        
+        .font-bold {
+            font-weight: bold;
+        }
+        
+        .px-2 {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+        
+        .py-1 {
+            padding-top: 0.25rem;
+            padding-bottom: 0.25rem;
+        }
+        
+        .rounded-full {
+            border-radius: 9999px;
+        }
+    </style>
 </head>
-<body>
+<body class="bg-gray-50 min-h-screen">
 
-<h1 th:text="${proveedor.idProveedor == null ? 'Registrar Proveedor' : 'Editar Proveedor'}"></h1>
+    <!-- NAVBAR NARANJA -->
+    <nav class="nav-orange shadow-lg">
+        <div class="container px-4 py-3 flex justify-between items-center">
+            <a th:href="@{/}" class="text-xl font-bold flex items-center">
+                <i class="fas fa-car mr-2"></i> GaragePro
+            </a>
+            <a th:href="@{/proveedores}" class="text-sm hover:text-orange-200 flex items-center">
+                <i class="fas fa-arrow-left mr-1"></i> Volver a Proveedores
+            </a>
+        </div>
+    </nav>
 
-<a href="/proveedores">⬅ Volver</a>
-<br><br>
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div class="container px-4 py-8 max-w-4xl">
+        
+        <!-- TARJETA -->
+        <div class="bg-white shadow-xl rounded-lg overflow-hidden border border-gray-200">
+            
+            <!-- HEADER NARANJA -->
+            <div class="card-header-orange px-6 py-4">
+                <div class="flex items-center">
+                    <i class="fas fa-truck-loading text-2xl mr-3"></i>
+                    <h1 class="text-2xl font-bold" th:text="${proveedor.idProveedor == null ? 'Registrar Nuevo Proveedor' : 'Editar Proveedor'}"></h1>
+                </div>
+                <p class="text-orange-light mt-1">
+                    Gestión de proveedores para repuestos y materiales del taller.
+                </p>
+            </div>
 
-<p th:if="${error}" style="color:red;" th:text="${error}"></p>
+            <!-- ERROR -->
+            <div th:if="${error}" class="bg-red-50 border-l-4 border-red-500 p-4 mx-6 mt-6">
+                <div class="flex items-center">
+                    <i class="fas fa-exclamation-circle text-red-500 mr-3"></i>
+                    <p class="text-red-700 font-medium" th:text="${error}"></p>
+                </div>
+            </div>
 
-<form action="/proveedores/guardar" method="post">
+            <!-- FORMULARIO -->
+            <form th:action="@{/proveedores/guardar}" method="post" class="p-6">
+                
+                <input type="hidden" name="idProveedor" th:value="${proveedor.idProveedor}">
 
-    <input type="hidden" name="idProveedor" th:value="${proveedor.idProveedor}">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <!-- Razón Social -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700">
+                            <i class="fas fa-building mr-1 icon-orange"></i> Razón Social *
+                        </label>
+                        <input type="text" name="razonSocial" th:value="${proveedor.razonSocial}"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg border-orange-focus transition duration-200"
+                               placeholder="Ej: Repuestos Automotrices S.A.C." required>
+                        <p class="text-xs text-gray-500">Nombre legal de la empresa</p>
+                    </div>
 
-    <label>Razón Social:</label><br>
-    <input type="text" name="razonSocial" th:value="${proveedor.razonSocial}" required>
-    <br><br>
+                    <!-- Nombre Comercial -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700">
+                            <i class="fas fa-store mr-1 icon-orange"></i> Nombre Comercial
+                        </label>
+                        <input type="text" name="nombreComercial" th:value="${proveedor.nombreComercial}"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg border-orange-focus transition duration-200"
+                               placeholder="Ej: AutoParts Perú">
+                        <p class="text-xs text-gray-500">Nombre de marca o tienda</p>
+                    </div>
 
-    <label>Nombre Comercial:</label><br>
-    <input type="text" name="nombreComercial" th:value="${proveedor.nombreComercial}">
-    <br><br>
+                    <!-- RUC -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700">
+                            <i class="fas fa-id-card mr-1 icon-orange"></i> RUC *
+                        </label>
+                        <input type="text" name="ruc" th:value="${proveedor.ruc}"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg border-orange-focus transition duration-200"
+                               placeholder="Ej: 20123456789" maxlength="11" required>
+                        <p class="text-xs text-gray-500">11 dígitos (Perú)</p>
+                    </div>
 
-    <label>RUC:</label><br>
-    <input type="text" name="ruc" th:value="${proveedor.ruc}" required maxlength="11">
-    <br><br>
+                    <!-- Teléfono -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700">
+                            <i class="fas fa-phone mr-1 icon-orange"></i> Teléfono
+                        </label>
+                        <input type="text" name="telefono" th:value="${proveedor.telefono}"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg border-orange-focus transition duration-200"
+                               placeholder="Ej: (01) 234-5678">
+                        <p class="text-xs text-gray-500">Teléfono principal</p>
+                    </div>
 
-    <label>Dirección:</label><br>
-    <input type="text" name="direccion" th:value="${proveedor.direccion}">
-    <br><br>
+                </div>
 
-    <label>Teléfono:</label><br>
-    <input type="text" name="telefono" th:value="${proveedor.telefono}">
-    <br><br>
+                <!-- Dirección -->
+                <div class="space-y-2 mt-6">
+                    <label class="block text-sm font-medium text-gray-700">
+                        <i class="fas fa-map-marker-alt mr-1 icon-orange"></i> Dirección
+                    </label>
+                    <input type="text" name="direccion" th:value="${proveedor.direccion}"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg border-orange-focus transition duration-200"
+                           placeholder="Ej: Av. Javier Prado 1234, San Isidro, Lima">
+                    <p class="text-xs text-gray-500">Dirección completa</p>
+                </div>
 
-    <label>Email:</label><br>
-    <input type="email" name="email" th:value="${proveedor.email}">
-    <br><br>
+                <!-- BOTONES CORREGIDOS -->
+                <div class="flex flex-wrap justify-end gap-4 mt-8 pt-6 border-t border-gray-200">
+                    
+                    <!-- BOTÓN CANCELAR -->
+                    <a th:href="@{/proveedores}" class="btn-cancelar">
+                        <i class="fas fa-times mr-2"></i> Cancelar
+                    </a>
+                    
+                    <!-- BOTÓN GUARDAR -->
+                    <button type="submit" class="btn-guardar">
+                        <i class="fas fa-save mr-2"></i>
+                        <span th:text="${proveedor.idProveedor == null ? 'Registrar Proveedor' : 'Actualizar Proveedor'}">
+                            Guardar
+                        </span>
+                    </button>
+                </div>
 
-    <label>Contacto (Nombre):</label><br>
-    <input type="text" name="contactoNombre" th:value="${proveedor.contactoNombre}">
-    <br><br>
+            </form>
 
-    <label>Contacto (Teléfono):</label><br>
-    <input type="text" name="contactoTelefono" th:value="${proveedor.contactoTelefono}">
-    <br><br>
+        </div>
 
-    <button type="submit">Guardar</button>
+    </div>
 
-</form>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Formulario de proveedor cargado con botones corregidos');
+        });
+    </script>
 
 </body>
 </html>

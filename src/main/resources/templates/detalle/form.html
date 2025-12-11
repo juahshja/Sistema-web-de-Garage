@@ -3,54 +3,468 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nuevo Detalle de Repuesto</title>
-</head>
-<body>
-    <h1>Nuevo Detalle de Repuesto</h1>
+    <title>Agregar Repuesto - GaragePro</title>
     
-    <form th:action="@{/detalles-repuestos/guardar}" method="post">
-        <!-- Orden -->
-        <div>
-            <label for="ordenId">Orden de Trabajo:</label><br>
-            <select id="ordenId" name="ordenId" required>
-                <option value="">-- Seleccionar Orden --</option>
-                <option th:each="orden : ${ordenes}" 
-                        th:value="${orden.idOrdenTrabajo}"
-                        th:text="'Orden #' + ${orden.idOrdenTrabajo}">
-                </option>
-            </select>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        .form-input:focus, .form-select:focus {
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.3) !important;
+            border-color: #ef4444 !important;
+        }
+        
+        .moneda::before {
+            content: "S/ ";
+            color: #6b7280;
+            font-weight: 500;
+        }
+        
+        .calculado {
+            background-color: #fef2f2 !important;
+            font-weight: 600 !important;
+        }
+        
+        .select-custom {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+        }
+        
+        .info-card {
+            transition: all 0.3s ease;
+        }
+        
+        .stock-bajo {
+            border-left-color: #f87171 !important;
+            background-color: #fef2f2 !important;
+        }
+        
+        .stock-ok {
+            border-left-color: #10b981 !important;
+            background-color: #f0fdf4 !important;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+    <!-- Navbar - IDÉNTICO AL TUYO -->
+    <nav class="bg-red-700 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a th:href="@{/}" class="text-xl font-bold flex items-center">
+                <i class="fas fa-car mr-2"></i> GaragePro
+            </a>
+            <div class="text-sm">
+                <a th:href="@{/detalles-repuestos}" class="hover:text-red-200 flex items-center">
+                    <i class="fas fa-arrow-left mr-1"></i> Volver a Detalles
+                </a>
+            </div>
         </div>
+    </nav>
+
+    <!-- Contenedor principal -->
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
         
-        <br>
+        <!-- Tarjeta del formulario -->
+        <div class="bg-white shadow-xl rounded-lg overflow-hidden border border-gray-200">
+            
+            <!-- Header - MISMO ESTILO QUE FACTURA -->
+            <div class="bg-gradient-to-r from-red-600 to-red-700 text-white px-6 py-4">
+                <div class="flex items-center">
+                    <i class="fas fa-tools text-2xl mr-3"></i>
+                    <h1 class="text-2xl font-bold">Agregar Repuesto a Orden</h1>
+                </div>
+                <p class="text-red-100 mt-1">
+                    Asocia repuestos del inventario a órdenes de trabajo.
+                </p>
+            </div>
+
+            <!-- Mensajes Flash -->
+            <div th:if="${mensaje}" 
+                 th:classappend="${tipoMensaje == 'success'} ? 'bg-green-50 border-l-4 border-green-500' : 'bg-red-50 border-l-4 border-red-500'"
+                 class="p-4 mx-6 mt-6">
+                <div class="flex items-center">
+                    <i th:classappend="${tipoMensaje == 'success'} ? 'fas fa-check-circle text-green-500' : 'fas fa-exclamation-circle text-red-500'" 
+                       class="mr-3"></i>
+                    <p th:text="${mensaje}" class="font-medium"></p>
+                </div>
+            </div>
+
+            <!-- Formulario -->
+            <form th:action="@{/detalles-repuestos/guardar}" method="post" class="p-6" onsubmit="return validarFormulario()">
+                
+                <!-- Grid de 2 columnas -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <!-- Columna Izquierda -->
+                    <div class="space-y-6">
+                        
+                        <!-- Selección de Orden -->
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-gray-700">
+                                <i class="fas fa-clipboard-list mr-1 text-red-500"></i>
+                                Orden de Trabajo *
+                            </label>
+                            <select id="ordenId" name="ordenId" required
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg 
+                                           focus:ring-2 focus:ring-red-500 focus:border-red-500 
+                                           transition duration-200 form-select select-custom">
+                                <option value="">-- Seleccione una orden --</option>
+                                <option th:each="orden : ${ordenes}" 
+                                        th:value="${orden.idOrdenTrabajo}"
+                                        th:data-vehiculo="${orden.vehiculo.marca} ${orden.vehiculo.modelo}"
+                                        th:data-cliente="${orden.vehiculo.cliente.nombre}"
+                                        th:text="'Orden #' + ${orden.idOrdenTrabajo} + ' - ' + ${orden.vehiculo.marca} + ' ' + ${orden.vehiculo.modelo}">
+                                </option>
+                            </select>
+                            <div id="infoOrden" class="hidden mt-3 p-3 bg-blue-50 border border-blue-200 rounded text-sm">
+                                <div class="grid grid-cols-2 gap-2">
+                                    <span class="text-gray-600">Vehículo:</span>
+                                    <span id="vehiculoInfo" class="font-medium"></span>
+                                    <span class="text-gray-600">Cliente:</span>
+                                    <span id="clienteInfo" class="font-medium"></span>
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">Seleccione la orden a la que se agregará el repuesto</p>
+                        </div>
+
+                        <!-- Selección de Repuesto -->
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-gray-700">
+                                <i class="fas fa-cog mr-1 text-red-500"></i>
+                                Repuesto *
+                            </label>
+                            <select id="repuestoId" name="repuestoId" required
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg 
+                                           focus:ring-2 focus:ring-red-500 focus:border-red-500 
+                                           transition duration-200 form-select select-custom"
+                                    onchange="mostrarInfoRepuesto()">
+                                <option value="">-- Seleccione un repuesto --</option>
+                                <option th:each="repuesto : ${repuestos}" 
+                                        th:value="${repuesto.idRepuesto}"
+                                        th:data-precio="${repuesto.precioVenta}"
+                                        th:data-stock="${repuesto.stockActual}"
+                                        th:data-codigo="${repuesto.codigoBarras}"
+                                        th:data-proveedor="${repuesto.proveedor?.nombre}"
+                                        th:data-minimo="${repuesto.stockMinimo}"
+                                        th:text="${repuesto.nombre} + ' (Stock: ' + ${repuesto.stockActual} + ')'">
+                                </option>
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1">El stock disponible se muestra entre paréntesis</p>
+                        </div>
+
+                        <!-- Cantidad -->
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-gray-700">
+                                <i class="fas fa-hashtag mr-1 text-red-500"></i>
+                                Cantidad *
+                            </label>
+                            <div class="relative">
+                                <input type="number" id="cantidad" name="cantidad" 
+                                       min="1" value="1" required
+                                       oninput="calcularSubtotal()"
+                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg 
+                                              focus:ring-2 focus:ring-red-500 focus:border-red-500 
+                                              transition duration-200 form-input">
+                                <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+                                    <span class="text-gray-500">unidades</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center mt-1">
+                                <p class="text-xs text-gray-500">Máximo recomendado: <span id="maxRecomendado" class="font-medium">0</span> unidades</p>
+                                <button type="button" onclick="document.getElementById('cantidad').value = document.getElementById('maxRecomendado').innerText"
+                                        class="text-xs text-red-600 hover:text-red-800 font-medium">
+                                    <i class="fas fa-arrow-up mr-1"></i>Usar máximo
+                                </button>
+                            </div>
+                        </div>
+
+                    </div> <!-- Fin columna izquierda -->
+
+                    <!-- Columna Derecha -->
+                    <div class="space-y-6">
+                        
+                        <!-- Información del Repuesto -->
+                        <div id="infoRepuesto" class="hidden">
+                            <div class="info-card bg-gray-50 border border-gray-200 rounded-xl p-6">
+                                <h3 class="font-semibold text-gray-800 mb-4 flex items-center">
+                                    <i class="fas fa-info-circle mr-2 text-red-500"></i>Información del Repuesto
+                                </h3>
+                                <div class="space-y-3">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Precio unitario:</span>
+                                        <span id="precioUnitario" class="font-semibold text-green-600">S/ 0.00</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Stock disponible:</span>
+                                        <span id="stockDisponible" class="font-semibold">0</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Código de barras:</span>
+                                        <span id="codigoBarras" class="font-mono text-gray-700">N/A</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Proveedor:</span>
+                                        <span id="proveedor" class="text-gray-700">No asignado</span>
+                                    </div>
+                                    
+                                    <!-- Alertas de stock -->
+                                    <div id="alertaStockBajo" class="hidden mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-exclamation-triangle text-yellow-500 mr-3"></i>
+                                            <div>
+                                                <h4 class="font-medium text-yellow-800">Stock bajo</h4>
+                                                <p class="text-sm text-yellow-700">Quedan pocas unidades. Stock mínimo: <span id="stockMinimo" class="font-bold">5</span></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Cálculo de subtotal -->
+                                    <div class="pt-4 mt-4 border-t border-gray-300">
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-gray-600 font-medium">Subtotal estimado:</span>
+                                            <span id="subtotal" class="text-xl font-bold text-red-600">S/ 0.00</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Resumen de Orden Actual -->
+                        <div class="bg-gray-50 border border-gray-200 rounded-xl p-6">
+                            <h3 class="font-semibold text-gray-700 mb-4 flex items-center">
+                                <i class="fas fa-receipt mr-2 text-red-500"></i>Resumen de la Orden
+                            </h3>
+                            <ul class="space-y-3 text-sm">
+                                <li class="flex justify-between items-center">
+                                    <span class="text-gray-600">Repuestos agregados:</span>
+                                    <span id="totalRepuestos" class="px-2 py-1 bg-red-100 text-red-800 rounded-full font-medium">0</span>
+                                </li>
+                                <li class="flex justify-between">
+                                    <span class="text-gray-600">Valor total en repuestos:</span>
+                                    <span id="valorTotal" class="font-semibold">S/ 0.00</span>
+                                </li>
+                                <li class="flex justify-between">
+                                    <span class="text-gray-600">Estado actual:</span>
+                                    <span id="estadoOrden" class="font-medium text-yellow-600">PENDIENTE</span>
+                                </li>
+                            </ul>
+                            <div class="mt-4 pt-4 border-t border-gray-300">
+                                <a href="#" class="text-red-600 hover:text-red-800 text-sm font-medium flex items-center">
+                                    <i class="fas fa-eye mr-2"></i> Ver detalles completos de la orden
+                                </a>
+                            </div>
+                        </div>
+
+                    </div> <!-- Fin columna derecha -->
+
+                </div> <!-- Fin del grid -->
+
+                <!-- Instrucciones -->
+                <div class="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <h4 class="text-md font-semibold text-blue-800 mb-2 flex items-center">
+                        <i class="fas fa-lightbulb mr-2"></i>
+                        Instrucciones
+                    </h4>
+                    <ul class="list-disc pl-5 text-sm text-gray-700 space-y-1">
+                        <li>El sistema automáticamente descontará el stock al guardar</li>
+                        <li>Verifique la disponibilidad antes de confirmar</li>
+                        <li>El subtotal se calcula automáticamente (precio × cantidad)</li>
+                        <li>Los cambios se reflejarán en el total de la orden</li>
+                    </ul>
+                </div>
+
+                <!-- Botones de acción - MISMO ESTILO QUE FACTURA -->
+                <div class="flex flex-wrap justify-end gap-4 mt-8 pt-6 border-t border-gray-200">
+                    
+                    <!-- Botón Cancelar -->
+                    <a th:href="@{/detalles-repuestos}" 
+                       class="px-6 py-2 border border-gray-300 rounded-lg 
+                              text-gray-700 hover:bg-gray-50 hover:border-gray-400 
+                              transition duration-200 flex items-center">
+                        <i class="fas fa-times mr-2"></i>
+                        Cancelar
+                    </a>
+                    
+                    <!-- Botón Guardar -->
+                    <button type="submit"
+                            class="px-6 py-2 bg-gradient-to-r from-red-600 to-red-700 
+                                   text-white rounded-lg hover:from-red-700 hover:to-red-800 
+                                   transition duration-200 shadow-md hover:shadow-lg flex items-center">
+                        <i class="fas fa-save mr-2"></i>
+                        Guardar Detalle
+                    </button>
+                </div>
+
+            </form>
+
+            <!-- Footer informativo - ESTILO SIMILAR -->
+            <div class="bg-gray-50 px-6 py-4 border-t border-gray-200">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
+                    <div class="flex items-center">
+                        <i class="fas fa-boxes text-red-500 mr-2"></i>
+                        <span>Control de inventario en tiempo real</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-calculator text-red-500 mr-2"></i>
+                        <span>Cálculos automáticos de costos</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-sync-alt text-red-500 mr-2"></i>
+                        <span>Stock actualizado automáticamente</span>
+                    </div>
+                </div>
+            </div>
+
+        </div> <!-- Fin de la tarjeta -->
+
+    </div> <!-- Fin del contenedor principal -->
+
+    <!-- Scripts para interactividad -->
+    <script>
+        // Variables globales
+        let repuestoSeleccionado = null;
+        let stockDisponible = 0;
+        let precioUnitario = 0;
         
-        <!-- Repuesto -->
-        <div>
-            <label for="repuestoId">Repuesto:</label><br>
-            <select id="repuestoId" name="repuestoId" required>
-                <option value="">-- Seleccionar Repuesto --</option>
-                <option th:each="repuesto : ${repuestos}" 
-                        th:value="${repuesto.idRepuesto}"
-                        th:text="${repuesto.nombre}">
-                </option>
-            </select>
-        </div>
+        // Mostrar información del repuesto seleccionado
+        function mostrarInfoRepuesto() {
+            const select = document.getElementById('repuestoId');
+            const infoDiv = document.getElementById('infoRepuesto');
+            const alertaDiv = document.getElementById('alertaStockBajo');
+            const selectedOption = select.options[select.selectedIndex];
+            
+            if (selectedOption.value) {
+                // Mostrar información
+                infoDiv.classList.remove('hidden');
+                
+                // Obtener datos desde los atributos data
+                precioUnitario = parseFloat(selectedOption.getAttribute('data-precio')) || 0;
+                stockDisponible = parseInt(selectedOption.getAttribute('data-stock')) || 0;
+                const codigo = selectedOption.getAttribute('data-codigo') || 'N/A';
+                const proveedor = selectedOption.getAttribute('data-proveedor') || 'No asignado';
+                const stockMinimo = parseInt(selectedOption.getAttribute('data-minimo')) || 5;
+                
+                // Actualizar UI
+                document.getElementById('precioUnitario').textContent = 'S/ ' + precioUnitario.toFixed(2);
+                document.getElementById('stockDisponible').textContent = stockDisponible;
+                document.getElementById('codigoBarras').textContent = codigo;
+                document.getElementById('proveedor').textContent = proveedor;
+                document.getElementById('stockMinimo').textContent = stockMinimo;
+                document.getElementById('maxRecomendado').textContent = stockDisponible;
+                
+                // Validar stock bajo
+                if (stockDisponible <= stockMinimo) {
+                    alertaDiv.classList.remove('hidden');
+                    infoDiv.querySelector('.info-card').classList.add('stock-bajo');
+                    infoDiv.querySelector('.info-card').classList.remove('stock-ok');
+                } else {
+                    alertaDiv.classList.add('hidden');
+                    infoDiv.querySelector('.info-card').classList.remove('stock-bajo');
+                    infoDiv.querySelector('.info-card').classList.add('stock-ok');
+                }
+                
+                // Calcular subtotal inicial
+                calcularSubtotal();
+                
+                // Actualizar cantidad máxima
+                const cantidadInput = document.getElementById('cantidad');
+                cantidadInput.max = stockDisponible;
+                
+            } else {
+                infoDiv.classList.add('hidden');
+            }
+            
+            // Mostrar información de la orden seleccionada
+            mostrarInfoOrden();
+        }
         
-        <br>
+        // Mostrar información de la orden seleccionada
+        function mostrarInfoOrden() {
+            const selectOrden = document.getElementById('ordenId');
+            const infoDiv = document.getElementById('infoOrden');
+            const selectedOption = selectOrden.options[selectOrden.selectedIndex];
+            
+            if (selectedOption.value) {
+                infoDiv.classList.remove('hidden');
+                document.getElementById('vehiculoInfo').textContent = selectedOption.getAttribute('data-vehiculo') || 'N/A';
+                document.getElementById('clienteInfo').textContent = selectedOption.getAttribute('data-cliente') || 'N/A';
+            } else {
+                infoDiv.classList.add('hidden');
+            }
+        }
         
-        <!-- Cantidad -->
-        <div>
-            <label for="cantidad">Cantidad:</label><br>
-            <input type="number" id="cantidad" name="cantidad" 
-                   min="1" max="100" value="1" required>
-        </div>
+        // Calcular subtotal automáticamente
+        function calcularSubtotal() {
+            const cantidadInput = document.getElementById('cantidad');
+            const subtotalSpan = document.getElementById('subtotal');
+            
+            const cantidad = parseInt(cantidadInput.value) || 0;
+            
+            // Validar que no exceda el stock
+            if (cantidad > stockDisponible) {
+                cantidadInput.classList.add('border-red-500', 'bg-red-50');
+                subtotalSpan.classList.add('text-red-600');
+                subtotalSpan.textContent = 'S/ 0.00';
+                return;
+            } else {
+                cantidadInput.classList.remove('border-red-500', 'bg-red-50');
+                subtotalSpan.classList.remove('text-red-600');
+            }
+            
+            // Calcular subtotal
+            const subtotal = precioUnitario * cantidad;
+            subtotalSpan.textContent = 'S/ ' + subtotal.toFixed(2);
+        }
         
-        <br>
+        // Validar formulario antes de enviar
+        function validarFormulario() {
+            const cantidad = parseInt(document.getElementById('cantidad').value) || 0;
+            const repuestoId = document.getElementById('repuestoId').value;
+            const ordenId = document.getElementById('ordenId').value;
+            
+            // Validar campos requeridos
+            if (!ordenId) {
+                alert('Por favor, seleccione una orden de trabajo');
+                return false;
+            }
+            
+            if (!repuestoId) {
+                alert('Por favor, seleccione un repuesto');
+                return false;
+            }
+            
+            // Validar stock
+            if (cantidad > stockDisponible) {
+                alert('Error: La cantidad solicitada (' + cantidad + ') excede el stock disponible (' + stockDisponible + ')');
+                return false;
+            }
+            
+            if (cantidad <= 0) {
+                alert('Error: La cantidad debe ser mayor a 0');
+                return false;
+            }
+            
+            return true;
+        }
         
-        <!-- Botones -->
-        <div>
-            <button type="submit">Guardar</button>
-            <a th:href="@{/detalles-repuestos}">Cancelar</a>
-        </div>
-    </form>
+        // Inicializar eventos al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            // Configurar eventos
+            document.getElementById('ordenId').addEventListener('change', mostrarInfoOrden);
+            document.getElementById('cantidad').addEventListener('input', calcularSubtotal);
+            
+            // Inicializar valores
+            mostrarInfoOrden();
+            
+            // Mensaje de consola (para debugging)
+            console.log('Formulario de detalle de repuesto - GaragePro');
+        });
+    </script>
+
 </body>
 </html>

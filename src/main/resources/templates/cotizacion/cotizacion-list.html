@@ -3,45 +3,716 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Listado de Cotizaciones</title>
+    <title>Gestión de Cotizaciones - GaragePro</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        .table-row-hover:hover {
+            background-color: #f9fafb !important;
+        }
+        
+        .shadow-custom {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .status-pendiente { background-color: #fef3c7; color: #92400e; }
+        .status-aprobada { background-color: #d1fae5; color: #065f46; }
+        .status-rechazada { background-color: #fee2e2; color: #991b1b; }
+        .status-vencida { background-color: #e5e7eb; color: #374151; }
+        
+        .money {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+        
+        .moneda::before {
+            content: "S/ ";
+            color: #6b7280;
+            font-weight: 500;
+        }
+    </style>
 </head>
-<body>
+<body class="bg-gray-50 min-h-screen">
 
-<h1>Listado de Cotizaciones</h1>
+    <!-- Navbar -->
+    <nav class="bg-red-700 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a th:href="@{/}" class="text-xl font-bold flex items-center">
+                <i class="fas fa-car mr-2"></i> GaragePro
+            </a>
+            <div class="text-sm">
+                <a th:href="@{/}" class="hover:text-red-200 flex items-center">
+                    <i class="fas fa-home mr-1"></i> Inicio
+                </a>
+            </div>
+        </div>
+    </nav>
 
-<a href="/cotizaciones/nuevo">➕ Nueva Cotización</a>
+    <!-- Contenedor principal -->
+    <div class="container mx-auto px-4 py-8">
+        
+        <!-- Header con estadísticas -->
+        <div class="mb-8">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800 flex items-center">
+                        <i class="fas fa-file-invoice-dollar mr-3 text-red-600"></i>Gestión de Cotizaciones
+                    </h1>
+                    <p class="text-gray-600 mt-2">Administra las cotizaciones de servicios y repuestos</p>
+                </div>
+                
+                <div class="flex flex-wrap gap-4">
+                    <!-- Estadísticas rápidas -->
+                    <div class="flex flex-wrap gap-4">
+                        <!-- Total cotizaciones -->
+                        <div class="bg-white rounded-lg shadow-custom p-4 border border-gray-200">
+                            <div class="flex items-center">
+                                <div class="bg-blue-100 p-3 rounded-lg mr-4">
+                                    <i class="fas fa-file-alt text-blue-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <p class="text-gray-500 text-sm">Total Cotizaciones</p>
+                                    <p class="text-2xl font-bold text-gray-800" th:text="${cotizaciones.size()}">0</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Valor total -->
+                        <div class="bg-white rounded-lg shadow-custom p-4 border border-gray-200">
+                            <div class="flex items-center">
+                                <div class="bg-green-100 p-3 rounded-lg mr-4">
+                                    <i class="fas fa-money-bill-wave text-green-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <p class="text-gray-500 text-sm">Valor Total</p>
+                                    <p class="text-2xl font-bold text-gray-800 moneda" id="valorTotalCotizaciones">0.00</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Botón nueva cotización -->
+                    <a th:href="@{/cotizaciones/nuevo}" 
+                       class="inline-flex items-center px-5 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 transition duration-200 shadow-md hover:shadow-lg font-medium">
+                        <i class="fas fa-plus-circle mr-2"></i> Nueva Cotización
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Filtros rápidos -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <!-- Búsqueda por número -->
+                <div class="bg-white p-4 rounded-lg shadow-custom border border-gray-200">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-hashtag mr-1"></i> Buscar por Número
+                    </label>
+                    <input type="text" 
+                           id="searchNumero"
+                           placeholder="Ej: COT-2024-001" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-200"
+                           onkeyup="filtrarTabla()">
+                </div>
+                
+                <!-- Filtro por estado -->
+                <div class="bg-white p-4 rounded-lg shadow-custom border border-gray-200">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-clipboard-check mr-1"></i> Filtrar por Estado
+                    </label>
+                    <select id="filterEstado" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-200"
+                            onchange="filtrarTabla()">
+                        <option value="">Todos los estados</option>
+                        <option value="PENDIENTE">Pendiente</option>
+                        <option value="APROBADA">Aprobada</option>
+                        <option value="RECHAZADA">Rechazada</option>
+                        <option value="VENCIDA">Vencida</option>
+                    </select>
+                </div>
+                
+                <!-- Filtro por rango de fechas -->
+                <div class="bg-white p-4 rounded-lg shadow-custom border border-gray-200">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-calendar-alt mr-1"></i> Rango de Fechas
+                    </label>
+                    <div class="flex gap-2">
+                        <input type="date" 
+                               id="fechaDesde"
+                               class="w-1/2 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-200">
+                        <input type="date" 
+                               id="fechaHasta"
+                               class="w-1/2 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-200">
+                    </div>
+                </div>
+                
+                <!-- Botón limpiar filtros -->
+                <div class="flex items-end">
+                    <button onclick="limpiarFiltros()"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-400 transition duration-200 flex items-center justify-center">
+                        <i class="fas fa-times mr-2"></i> Limpiar Filtros
+                    </button>
+                </div>
+            </div>
+        </div>
 
-<table border="1" cellpadding="8">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Número</th>
-            <th>Fecha</th>
-            <th>Total</th>
-            <th>Estado</th>
-            <th>Orden Trabajo</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
+        <!-- Tarjeta de la tabla -->
+        <div class="bg-white shadow-xl rounded-lg overflow-hidden border border-gray-200">
+            
+            <!-- Header de la tabla -->
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-700">
+                            <i class="fas fa-list mr-2 text-red-500"></i>Cotizaciones Registradas
+                        </h2>
+                        <p class="text-sm text-gray-500 mt-1" th:if="${cotizaciones.size() > 0}">
+                            Mostrando <span id="contadorFiltrado" class="font-medium" th:text="${cotizaciones.size()}"></span> cotización(es)
+                        </p>
+                    </div>
+                    
+                    <!-- Resumen de estados -->
+                    <div class="flex flex-wrap gap-2">
+                        <span class="status-badge status-pendiente">
+                            <i class="fas fa-clock mr-1"></i>
+                            <span id="countPendiente">0</span> Pendientes
+                        </span>
+                        <span class="status-badge status-aprobada">
+                            <i class="fas fa-check-circle mr-1"></i>
+                            <span id="countAprobada">0</span> Aprobadas
+                        </span>
+                        <span class="status-badge status-rechazada">
+                            <i class="fas fa-times-circle mr-1"></i>
+                            <span id="countRechazada">0</span> Rechazadas
+                        </span>
+                    </div>
+                </div>
+            </div>
 
-    <tbody>
-        <tr th:each="cot : ${cotizaciones}">
-            <td th:text="${cot.idCotizacion}"></td>
-            <td th:text="${cot.numeroCotizacion}"></td>
-            <td th:text="${cot.fechaEmision}"></td>
-            <td th:text="${cot.total}"></td>
-            <td th:text="${cot.estado}"></td>
-            <td th:text="${cot.ordenTrabajo.idOrdenTrabajo}"></td>
+            <!-- Tabla de cotizaciones -->
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                <div class="flex items-center">
+                                    <i class="fas fa-hashtag mr-2"></i> Cotización
+                                </div>
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                <div class="flex items-center">
+                                    <i class="fas fa-clipboard-list mr-2"></i> Orden / Vehículo
+                                </div>
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                <div class="flex items-center">
+                                    <i class="fas fa-calendar-alt mr-2"></i> Fecha
+                                </div>
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                <div class="flex items-center">
+                                    <i class="fas fa-money-bill-wave mr-2"></i> Montos
+                                </div>
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                <div class="flex items-center">
+                                    <i class="fas fa-clipboard-check mr-2"></i> Estado
+                                </div>
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                <div class="flex items-center">
+                                    <i class="fas fa-cogs mr-2"></i> Acciones
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200" id="tablaCotizaciones">
+                        <tr th:each="cot : ${cotizaciones}" 
+                            class="table-row-hover transition duration-150"
+                            th:data-numero="${cot.numeroCotizacion}"
+                            th:data-estado="${cot.estado}"
+                            th:data-fecha="${#dates.format(cot.fechaEmision, 'yyyy-MM-dd')}"
+                            th:data-total="${cot.total}">
+                            
+                            <!-- Información de la cotización -->
+                            <td class="px-6 py-4">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-10 w-10">
+                                        <div class="h-10 w-10 rounded-lg bg-red-100 flex items-center justify-center">
+                                            <i class="fas fa-file-invoice-dollar text-red-600"></i>
+                                        </div>
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="text-sm font-semibold text-gray-900">
+                                            <span th:text="${cot.numeroCotizacion}"></span>
+                                        </div>
+                                        <div class="text-xs text-gray-500">
+                                            ID: <span th:text="${cot.idCotizacion}"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            
+                            <!-- Orden de Trabajo y Vehículo -->
+                            <td class="px-6 py-4">
+                                <div class="space-y-2">
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-900">
+                                            <i class="fas fa-clipboard-list mr-2 text-gray-400"></i>
+                                            Orden #<span th:text="${cot.ordenTrabajo.idOrdenTrabajo}"></span>
+                                        </div>
+                                        <div class="text-xs text-gray-500 ml-6">
+                                            <span th:text="${cot.ordenTrabajo.descripcionProblema}"></span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm text-gray-700">
+                                            <i class="fas fa-car mr-2 text-gray-400"></i>
+                                            <span th:text="${cot.ordenTrabajo.vehiculo.marca} + ' ' + ${cot.ordenTrabajo.vehiculo.modelo}"></span>
+                                        </div>
+                                        <div class="text-xs text-gray-500 ml-6">
+                                            <i class="fas fa-user mr-1"></i>
+                                            <span th:text="${cot.ordenTrabajo.vehiculo.cliente.nombre}"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            
+                            <!-- Fechas -->
+                            <td class="px-6 py-4">
+                                <div class="space-y-2">
+                                    <div class="text-sm">
+                                        <div class="text-gray-600">Emisión:</div>
+                                        <div class="font-medium text-gray-900">
+                                            <span th:text="${#dates.format(cot.fechaEmision, 'dd/MM/yyyy')}"></span>
+                                        </div>
+                                    </div>
+                                    <div class="text-sm" th:if="${cot.fechaVencimiento}">
+                                        <div class="text-gray-600">Vencimiento:</div>
+                                        <div class="font-medium" 
+                                             th:classappend="${#dates.createNow().after(cot.fechaVencimiento)} ? 'text-red-600' : 'text-gray-900'">
+                                            <span th:text="${#dates.format(cot.fechaVencimiento, 'dd/MM/yyyy')}"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            
+                            <!-- Montos -->
+                            <td class="px-6 py-4">
+                                <div class="space-y-2">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-gray-600">Subtotal:</span>
+                                        <span class="text-sm font-medium text-gray-900 moneda" 
+                                              th:text="${cot.subtotal != null ? cot.subtotal : '0.00'}"></span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-gray-600">IGV (18%):</span>
+                                        <span class="text-sm font-medium text-gray-900 moneda" 
+                                              th:text="${cot.igv != null ? cot.igv : '0.00'}"></span>
+                                    </div>
+                                    <div class="pt-2 border-t border-gray-200">
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-sm font-semibold text-gray-800">TOTAL:</span>
+                                            <span class="text-lg font-bold text-red-600 moneda" th:text="${cot.total}"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            
+                            <!-- Estado -->
+                            <td class="px-6 py-4">
+                                <div class="flex flex-col items-start">
+                                    <span th:switch="${cot.estado}">
+                                        <span th:case="'PENDIENTE'">
+                                            <span class="status-badge status-pendiente">
+                                                <i class="fas fa-clock mr-1"></i> PENDIENTE
+                                            </span>
+                                        </span>
+                                        <span th:case="'APROBADA'">
+                                            <span class="status-badge status-aprobada">
+                                                <i class="fas fa-check-circle mr-1"></i> APROBADA
+                                            </span>
+                                        </span>
+                                        <span th:case="'RECHAZADA'">
+                                            <span class="status-badge status-rechazada">
+                                                <i class="fas fa-times-circle mr-1"></i> RECHAZADA
+                                            </span>
+                                        </span>
+                                        <span th:case="'VENCIDA'">
+                                            <span class="status-badge status-vencida">
+                                                <i class="fas fa-hourglass-end mr-1"></i> VENCIDA
+                                            </span>
+                                        </span>
+                                        <span th:case="*">
+                                            <span class="status-badge bg-gray-100 text-gray-800">
+                                                <i class="fas fa-question-circle mr-1"></i>
+                                                <span th:text="${cot.estado}"></span>
+                                            </span>
+                                        </span>
+                                    </span>
+                                    
+                                    <div class="mt-3 text-xs text-gray-500">
+                                        <div th:if="${cot.observaciones}">
+                                            <i class="fas fa-sticky-note mr-1"></i>
+                                            <span th:text="${#strings.substring(cot.observaciones, 0, 30)} + '...'"></span>
+                                        </div>
+                                        <div class="mt-1" th:if="${cot.diasValidez}">
+                                            <i class="fas fa-calendar-day mr-1"></i>
+                                            Válido por <span th:text="${cot.diasValidez}"></span> días
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            
+                            <!-- Acciones -->
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <div class="flex flex-col space-y-2">
+                                    <!-- Botón Editar -->
+                                    <a th:href="@{'/cotizaciones/editar/' + ${cot.idCotizacion}}"
+                                       class="inline-flex items-center px-3 py-2 border border-blue-300 rounded-lg text-blue-700 bg-white hover:bg-blue-50 hover:border-blue-400 transition duration-200 justify-center">
+                                        <i class="fas fa-edit mr-1"></i> Editar
+                                    </a>
+                                    
+                                    <!-- Botón Ver Detalles -->
+                                    <a th:href="@{'/cotizaciones/detalle/' + ${cot.idCotizacion}}"
+                                       class="inline-flex items-center px-3 py-2 border border-green-300 rounded-lg text-green-700 bg-white hover:bg-green-50 hover:border-green-400 transition duration-200 justify-center">
+                                        <i class="fas fa-eye mr-1"></i> Ver
+                                    </a>
+                                    
+                                    <!-- Botón Imprimir/PDF -->
+                                    <a th:href="@{'/cotizaciones/imprimir/' + ${cot.idCotizacion}}"
+                                       target="_blank"
+                                       class="inline-flex items-center px-3 py-2 border border-purple-300 rounded-lg text-purple-700 bg-white hover:bg-purple-50 hover:border-purple-400 transition duration-200 justify-center">
+                                        <i class="fas fa-print mr-1"></i> PDF
+                                    </a>
+                                    
+                                    <!-- Botón Convertir a Factura -->
+                                    <a th:href="@{'/facturas/nuevo?cotizacionId=' + ${cot.idCotizacion}}"
+                                       th:if="${cot.estado == 'APROBADA'}"
+                                       class="inline-flex items-center px-3 py-2 border border-red-300 rounded-lg text-red-700 bg-white hover:bg-red-50 hover:border-red-400 transition duration-200 justify-center">
+                                        <i class="fas fa-file-invoice mr-1"></i> Facturar
+                                    </a>
+                                    
+                                    <!-- Botón Eliminar -->
+                                    <form th:action="@{'/cotizaciones/eliminar/' + ${cot.idCotizacion}}"
+                                          method="post"
+                                          class="inline"
+                                          onsubmit="return confirmarEliminacion()">
+                                        <button type="submit"
+                                                class="w-full inline-flex items-center px-3 py-2 border border-red-300 rounded-lg text-red-700 bg-white hover:bg-red-50 hover:border-red-400 transition duration-200 justify-center">
+                                            <i class="fas fa-trash-alt mr-1"></i> Eliminar
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <!-- Mensaje si no hay cotizaciones -->
+                        <tr th:if="${cotizaciones.isEmpty()}">
+                            <td colspan="6" class="px-6 py-12 text-center">
+                                <div class="text-gray-400">
+                                    <i class="fas fa-file-invoice-dollar text-4xl mb-4"></i>
+                                    <h3 class="text-lg font-medium text-gray-500 mb-2">No hay cotizaciones registradas</h3>
+                                    <p class="text-gray-400 mb-6">Comienza creando tu primera cotización</p>
+                                    <a th:href="@{/cotizaciones/nuevo}" 
+                                       class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-200">
+                                        <i class="fas fa-plus-circle mr-2"></i> Crear Primera Cotización
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
 
-            <td>
-                <a th:href="@{'/cotizaciones/editar/' + ${cot.idCotizacion}}">✏ Editar</a>
-                |
-                <a th:href="@{'/cotizaciones/eliminar/' + ${cot.idCotizacion}}"
-                   onclick="return confirm('¿Eliminar cotización?')">🗑 Eliminar</a>
-            </td>
-        </tr>
-    </tbody>
-</table>
+            <!-- Footer de la tabla -->
+            <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+                <div class="flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
+                    <div class="flex items-center space-x-4">
+                        <span>
+                            <i class="fas fa-calculator mr-1"></i>
+                            Valor total: <span class="font-medium moneda" id="valorTotalFiltrado">0.00</span>
+                        </span>
+                        <span>
+                            <i class="fas fa-chart-pie mr-1"></i>
+                            <span id="porcentajeAprobadas">0</span>% aprobadas
+                        </span>
+                    </div>
+                    <div class="mt-2 md:mt-0">
+                        <span class="text-gray-400">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Sistema GaragePro - Módulo de Cotizaciones
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel de resumen -->
+        <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Estadísticas por estado -->
+            <div class="bg-white rounded-lg shadow-custom border border-gray-200 p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                    <i class="fas fa-chart-bar mr-2 text-red-500"></i>
+                    Resumen por Estado
+                </h3>
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600">Pendientes:</span>
+                        <div class="flex items-center">
+                            <span class="font-medium mr-2" id="resumenPendiente">0</span>
+                            <div class="w-24 bg-gray-200 rounded-full h-2">
+                                <div id="barPendiente" class="bg-yellow-500 h-2 rounded-full" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600">Aprobadas:</span>
+                        <div class="flex items-center">
+                            <span class="font-medium mr-2" id="resumenAprobada">0</span>
+                            <div class="w-24 bg-gray-200 rounded-full h-2">
+                                <div id="barAprobada" class="bg-green-500 h-2 rounded-full" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600">Rechazadas:</span>
+                        <div class="flex items-center">
+                            <span class="font-medium mr-2" id="resumenRechazada">0</span>
+                            <div class="w-24 bg-gray-200 rounded-full h-2">
+                                <div id="barRechazada" class="bg-red-500 h-2 rounded-full" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Últimas cotizaciones -->
+            <div class="bg-white rounded-lg shadow-custom border border-gray-200 p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                    <i class="fas fa-history mr-2 text-red-500"></i>
+                    Recientes
+                </h3>
+                <div class="space-y-3" th:if="${cotizaciones.size() > 0}">
+                    <div th:each="cot, stat : ${cotizaciones}" th:if="${stat.index < 3}">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <div class="text-sm font-medium" th:text="${cot.numeroCotizacion}"></div>
+                                <div class="text-xs text-gray-500" th:text="${#dates.format(cot.fechaEmision, 'dd/MM')}"></div>
+                            </div>
+                            <span th:classappend="${cot.estado == 'PENDIENTE'} ? 'status-badge status-pendiente' :
+                                                 ${cot.estado == 'APROBADA'} ? 'status-badge status-aprobada' :
+                                                 ${cot.estado == 'RECHAZADA'} ? 'status-badge status-rechazada' : 'status-badge'"
+                                  class="text-xs">
+                                <span th:text="${cot.estado}"></span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div th:if="${cotizaciones.isEmpty()}" class="text-center text-gray-400 py-4">
+                    <i class="fas fa-inbox text-2xl mb-2"></i>
+                    <p class="text-sm">No hay cotizaciones recientes</p>
+                </div>
+            </div>
+            
+            <!-- Acciones rápidas -->
+            <div class="bg-white rounded-lg shadow-custom border border-gray-200 p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                    <i class="fas fa-bolt mr-2 text-red-500"></i>
+                    Acciones Rápidas
+                </h3>
+                <div class="space-y-3">
+                    <a th:href="@{/cotizaciones/nuevo}"
+                       class="block w-full text-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-200">
+                        <i class="fas fa-plus mr-2"></i> Nueva Cotización
+                    </a>
+                    <a th:href="@{/ordenes}"
+                       class="block w-full text-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition duration-200">
+                        <i class="fas fa-clipboard-list mr-2"></i> Ver Órdenes
+                    </a>
+                    <a href="#"
+                       class="block w-full text-center px-4 py-2 border border-blue-300 text-blue-700 rounded-lg hover:bg-blue-50 transition duration-200">
+                        <i class="fas fa-chart-line mr-2"></i> Reporte Mensual
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div> <!-- Fin del contenedor principal -->
+
+    <!-- Scripts para funcionalidades -->
+    <script>
+        // Variables globales
+        let allQuotations = [];
+        let totalValue = 0;
+        
+        // Inicializar al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            // Guardar todas las cotizaciones
+            const rows = document.querySelectorAll('#tablaCotizaciones tr[th\\:data-numero]');
+            allQuotations = Array.from(rows);
+            
+            // Calcular estadísticas iniciales
+            calcularEstadisticas();
+            
+            // Calcular valor total
+            calcularValorTotal();
+            
+            console.log('Lista de cotizaciones cargada - GaragePro');
+        });
+        
+        // Calcular estadísticas
+        function calcularEstadisticas() {
+            if (allQuotations.length === 0) return;
+            
+            const counts = {
+                PENDIENTE: 0,
+                APROBADA: 0,
+                RECHAZADA: 0,
+                VENCIDA: 0
+            };
+            
+            allQuotations.forEach(row => {
+                const estado = row.getAttribute('th:data-estado') || row.getAttribute('data-estado');
+                if (estado && counts.hasOwnProperty(estado)) {
+                    counts[estado]++;
+                }
+            });
+            
+            // Actualizar contadores
+            document.getElementById('countPendiente').textContent = counts.PENDIENTE;
+            document.getElementById('countAprobada').textContent = counts.APROBADA;
+            document.getElementById('countRechazada').textContent = counts.RECHAZADA;
+            
+            document.getElementById('resumenPendiente').textContent = counts.PENDIENTE;
+            document.getElementById('resumenAprobada').textContent = counts.APROBADA;
+            document.getElementById('resumenRechazada').textContent = counts.RECHAZADA;
+            
+            // Actualizar barras de progreso
+            const total = allQuotations.length;
+            if (total > 0) {
+                document.getElementById('barPendiente').style.width = (counts.PENDIENTE / total * 100) + '%';
+                document.getElementById('barAprobada').style.width = (counts.APROBADA / total * 100) + '%';
+                document.getElementById('barRechazada').style.width = (counts.RECHAZADA / total * 100) + '%';
+                
+                // Porcentaje aprobadas
+                const porcentaje = Math.round((counts.APROBADA / total) * 100);
+                document.getElementById('porcentajeAprobadas').textContent = porcentaje;
+            }
+        }
+        
+        // Calcular valor total
+        function calcularValorTotal() {
+            totalValue = 0;
+            
+            allQuotations.forEach(row => {
+                const totalStr = row.getAttribute('th:data-total') || row.getAttribute('data-total');
+                if (totalStr) {
+                    const totalNum = parseFloat(totalStr);
+                    if (!isNaN(totalNum)) {
+                        totalValue += totalNum;
+                    }
+                }
+            });
+            
+            // Formatear como moneda
+            document.getElementById('valorTotalCotizaciones').textContent = totalValue.toFixed(2);
+            document.getElementById('valorTotalFiltrado').textContent = totalValue.toFixed(2);
+        }
+        
+        // Filtrar tabla
+        function filtrarTabla() {
+            const numeroFilter = document.getElementById('searchNumero').value.toUpperCase();
+            const estadoFilter = document.getElementById('filterEstado').value;
+            const fechaDesde = document.getElementById('fechaDesde').value;
+            const fechaHasta = document.getElementById('fechaHasta').value;
+            
+            let visibleCount = 0;
+            let filteredValue = 0;
+            
+            allQuotations.forEach(row => {
+                const numero = row.getAttribute('th:data-numero') || row.getAttribute('data-numero');
+                const estado = row.getAttribute('th:data-estado') || row.getAttribute('data-estado');
+                const fecha = row.getAttribute('th:data-fecha') || row.getAttribute('data-fecha');
+                const totalStr = row.getAttribute('th:data-total') || row.getAttribute('data-total');
+                
+                let show = true;
+                
+                // Filtro por número
+                if (numeroFilter && (!numero || !numero.toUpperCase().includes(numeroFilter))) {
+                    show = false;
+                }
+                
+                // Filtro por estado
+                if (estadoFilter && estado !== estadoFilter) {
+                    show = false;
+                }
+                
+                // Filtro por fecha
+                if (fechaDesde && fecha < fechaDesde) {
+                    show = false;
+                }
+                if (fechaHasta && fecha > fechaHasta) {
+                    show = false;
+                }
+                
+                if (show) {
+                    row.style.display = '';
+                    visibleCount++;
+                    
+                    // Sumar al valor filtrado
+                    if (totalStr) {
+                        const totalNum = parseFloat(totalStr);
+                        if (!isNaN(totalNum)) {
+                            filteredValue += totalNum;
+                        }
+                    }
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            document.getElementById('contadorFiltrado').textContent = visibleCount;
+            document.getElementById('valorTotalFiltrado').textContent = filteredValue.toFixed(2);
+        }
+        
+        // Limpiar filtros
+        function limpiarFiltros() {
+            document.getElementById('searchNumero').value = '';
+            document.getElementById('filterEstado').value = '';
+            document.getElementById('fechaDesde').value = '';
+            document.getElementById('fechaHasta').value = '';
+            
+            filtrarTabla(); // Esto mostrará todos nuevamente
+        }
+        
+        // Confirmar eliminación
+        function confirmarEliminacion() {
+            return confirm('¿Está seguro de eliminar esta cotización?\n\n⚠️ Esta acción no se puede deshacer.\n⚠️ Si la cotización está aprobada, verifique antes de eliminar.');
+        }
+        
+        // Agregar efectos hover
+        const botones = document.querySelectorAll('button, a[href]');
+        botones.forEach(boton => {
+            boton.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-1px)';
+            });
+            boton.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+    </script>
 
 </body>
 </html>

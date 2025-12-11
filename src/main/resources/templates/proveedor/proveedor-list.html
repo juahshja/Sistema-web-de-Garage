@@ -3,51 +3,238 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Proveedores</title>
+    <title>Proveedores - GaragePro</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        .table-row-hover:hover { background-color: #f9fafb; }
+        .status-activo { background-color: #d1fae5; color: #065f46; }
+        .status-inactivo { background-color: #fee2e2; color: #991b1b; }
+        .shadow-custom { box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    </style>
 </head>
-<body>
+<body class="bg-gray-50 min-h-screen">
 
-<h1>Proveedores</h1>
+    <!-- Navbar -->
+    <nav class="bg-red-700 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a th:href="@{/}" class="text-xl font-bold flex items-center">
+                <i class="fas fa-car mr-2"></i> GaragePro
+            </a>
+            <div class="text-sm">
+                <a th:href="@{/}" class="hover:text-red-200 flex items-center">
+                    <i class="fas fa-home mr-1"></i> Inicio
+                </a>
+            </div>
+        </div>
+    </nav>
 
-<a href="/proveedores/nuevo">➕ Nuevo Proveedor</a>
-<br><br>
+    <!-- Contenedor principal -->
+    <div class="container mx-auto px-4 py-8">
+        
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800 flex items-center">
+                        <i class="fas fa-truck mr-3 text-red-600"></i>Proveedores
+                    </h1>
+                    <p class="text-gray-600 mt-2">Gestión de proveedores de repuestos y materiales</p>
+                </div>
+                
+                <div class="flex items-center gap-4">
+                    <!-- Contador -->
+                    <div class="bg-white rounded-lg shadow-custom p-4 border border-gray-200">
+                        <div class="flex items-center">
+                            <div class="bg-blue-100 p-3 rounded-lg mr-4">
+                                <i class="fas fa-building text-blue-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-500 text-sm">Total Proveedores</p>
+                                <p class="text-2xl font-bold text-gray-800" th:text="${proveedores.size()}">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Botón nuevo -->
+                    <a th:href="@{/proveedores/nuevo}" 
+                       class="inline-flex items-center px-5 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-200 font-medium">
+                        <i class="fas fa-plus-circle mr-2"></i> Nuevo Proveedor
+                    </a>
+                </div>
+            </div>
+        </div>
 
-<table border="1" cellpadding="8">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Razón Social</th>
-            <th>RUC</th>
-            <th>Teléfono</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
+        <!-- Tabla -->
+        <div class="bg-white shadow-xl rounded-lg overflow-hidden border border-gray-200">
+            
+            <!-- Header tabla -->
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-lg font-semibold text-gray-700">
+                        <i class="fas fa-list mr-2 text-red-500"></i>Lista de Proveedores
+                    </h2>
+                    <div class="text-sm text-gray-500" th:if="${proveedores.size() > 0}">
+                        <span th:text="${proveedores.size()}"></span> proveedor(es)
+                    </div>
+                </div>
+            </div>
 
-    <tbody>
-        <tr th:each="prov : ${proveedores}">
-            <td th:text="${prov.idProveedor}"></td>
-            <td th:text="${prov.razonSocial}"></td>
-            <td th:text="${prov.ruc}"></td>
-            <td th:text="${prov.telefono}"></td>
+            <!-- Contenido tabla -->
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                <i class="fas fa-hashtag mr-2"></i>ID
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                <i class="fas fa-building mr-2"></i>Proveedor
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                <i class="fas fa-id-card mr-2"></i>Documento
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                <i class="fas fa-address-card mr-2"></i>Contacto
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                <i class="fas fa-clipboard-check mr-2"></i>Estado
+                            </th>
+                            <th class="px6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                <i class="fas fa-cogs mr-2"></i>Acciones
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <tr th:each="prov : ${proveedores}" class="table-row-hover transition duration-150">
+                            <!-- ID -->
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">
+                                    <span th:text="${prov.idProveedor}"></span>
+                                </div>
+                            </td>
+                            
+                            <!-- Razón Social -->
+                            <td class="px-6 py-4">
+                                <div class="text-sm font-medium text-gray-900">
+                                    <span th:text="${prov.razonSocial}"></span>
+                                </div>
+                                <div class="text-xs text-gray-500" th:if="${prov.direccion}">
+                                    <i class="fas fa-map-marker-alt mr-1"></i>
+                                    <span th:text="${prov.direccion}"></span>
+                                </div>
+                            </td>
+                            
+                            <!-- RUC -->
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">
+                                    <span th:text="${prov.ruc}"></span>
+                                </div>
+                            </td>
+                            
+                            <!-- Contacto -->
+                            <td class="px-6 py-4">
+                                <div class="text-sm text-gray-900" th:if="${prov.telefono}">
+                                    <i class="fas fa-phone mr-2 text-gray-400"></i>
+                                    <span th:text="${prov.telefono}"></span>
+                                </div>
+                                <div class="text-sm text-gray-600" th:if="${prov.email}">
+                                    <i class="fas fa-envelope mr-2 text-gray-400"></i>
+                                    <span th:text="${prov.email}"></span>
+                                </div>
+                            </td>
+                            
+                            <!-- Estado -->
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span th:if="${prov.activo}">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium status-activo">
+                                        <i class="fas fa-check-circle mr-1"></i> ACTIVO
+                                    </span>
+                                </span>
+                                <span th:unless="${prov.activo}">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium status-inactivo">
+                                        <i class="fas fa-times-circle mr-1"></i> INACTIVO
+                                    </span>
+                                </span>
+                            </td>
+                            
+                            <!-- Acciones -->
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <div class="flex flex-col space-y-2">
+                                    <!-- Editar -->
+                                    <a th:href="@{'/proveedores/editar/' + ${prov.idProveedor}}"
+                                       class="inline-flex items-center px-3 py-1 border border-blue-300 rounded text-blue-700 bg-white hover:bg-blue-50 transition duration-200 justify-center"
+                                       title="Editar proveedor">
+                                        <i class="fas fa-edit mr-1"></i> Editar
+                                    </a>
+                                    
+                                    <!-- Activar/Desactivar -->
+                                    <span th:if="${prov.activo}">
+                                        <a th:href="@{'/proveedores/desactivar/' + ${prov.idProveedor}}"
+                                           class="inline-flex items-center px-3 py-1 border border-yellow-300 rounded text-yellow-700 bg-white hover:bg-yellow-50 transition duration-200 justify-center"
+                                           title="Desactivar proveedor"
+                                           onclick="return confirm('¿Desactivar este proveedor?')">
+                                            <i class="fas fa-lock mr-1"></i> Desactivar
+                                        </a>
+                                    </span>
+                                    <span th:unless="${prov.activo}">
+                                        <a th:href="@{'/proveedores/activar/' + ${prov.idProveedor}}"
+                                           class="inline-flex items-center px-3 py-1 border border-green-300 rounded text-green-700 bg-white hover:bg-green-50 transition duration-200 justify-center"
+                                           title="Activar proveedor">
+                                            <i class="fas fa-unlock mr-1"></i> Activar
+                                        </a>
+                                    </span>
+                                    
+                                    <!-- Eliminar -->
+                                    <form th:action="@{'/proveedores/eliminar/' + ${prov.idProveedor}}"
+                                          method="post"
+                                          class="inline"
+                                          onsubmit="return confirm('¿Eliminar este proveedor permanentemente?')">
+                                        <button type="submit"
+                                                class="w-full inline-flex items-center px-3 py-1 border border-red-300 rounded text-red-700 bg-white hover:bg-red-50 transition duration-200 justify-center"
+                                                title="Eliminar proveedor">
+                                            <i class="fas fa-trash-alt mr-1"></i> Eliminar
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <!-- Sin datos -->
+                        <tr th:if="${proveedores.isEmpty()}">
+                            <td colspan="6" class="px-6 py-12 text-center">
+                                <div class="text-gray-400">
+                                    <i class="fas fa-truck text-4xl mb-4"></i>
+                                    <h3 class="text-lg font-medium text-gray-500 mb-2">No hay proveedores registrados</h3>
+                                    <p class="text-gray-400 mb-4">Registra tu primer proveedor de repuestos</p>
+                                    <a th:href="@{/proveedores/nuevo}" 
+                                       class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-200">
+                                        <i class="fas fa-plus-circle mr-2"></i> Registrar Primer Proveedor
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
 
-            <td th:text="${prov.activo ? 'Activo' : 'Inactivo'}"></td>
+            <!-- Footer -->
+            <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 text-sm text-gray-500">
+                <div class="flex justify-between items-center">
+                    <span>Sistema GaragePro - Gestión de Proveedores</span>
+                    <span th:if="${proveedores.size() > 0}">
+                        <i class="fas fa-users mr-1"></i>
+                        <span th:text="${#aggregates.sum(proveedores.![activo ? 1 : 0])}"></span> activos
+                    </span>
+                </div>
+            </div>
+        </div>
 
-            <td>
-                <a th:href="@{'/proveedores/editar/' + ${prov.idProveedor}}">✏ Editar</a> |
-                <a th:href="@{'/proveedores/eliminar/' + ${prov.idProveedor}}" onclick="return confirm('¿Eliminar proveedor?')">🗑 Eliminar</a> |
-
-                <span th:if="${prov.activo}">
-                    <a th:href="@{'/proveedores/desactivar/' + ${prov.idProveedor}}">🔒 Desactivar</a>
-                </span>
-                <span th:if="${!prov.activo}">
-                    <a th:href="@{'/proveedores/activar/' + ${prov.idProveedor}}">🔓 Activar</a>
-                </span>
-            </td>
-        </tr>
-    </tbody>
-
-</table>
+    </div>
 
 </body>
 </html>

@@ -3,75 +3,382 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Clientes</title>
-
+    <title>Gestión de Clientes - GaragePro</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
+        .table-row-hover:hover {
+            background-color: #f9fafb !important;
         }
-
-        th, td {
-            padding: 10px;
-            border: 1px solid #ddd;
-            text-align: left;
+        
+        .status-active {
+            background-color: #10b981 !important;
         }
-
-        th {
-            background: #f0f0f0;
+        
+        .status-inactive {
+            background-color: #ef4444 !important;
         }
-
-        .acciones a, .acciones form button {
-            margin-right: 8px;
+        
+        .shadow-custom {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
     </style>
 </head>
+<body class="bg-gray-50 min-h-screen">
 
-<body>
+    <!-- Navbar -->
+    <nav class="bg-red-700 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a th:href="@{/}" class="text-xl font-bold flex items-center">
+                <i class="fas fa-car mr-2"></i> GaragePro
+            </a>
+            <div class="text-sm">
+                <a th:href="@{/}" class="hover:text-red-200 flex items-center">
+                    <i class="fas fa-home mr-1"></i> Inicio
+                </a>
+            </div>
+        </div>
+    </nav>
 
-<h1>Clientes Registrados</h1>
+    <!-- Contenedor principal -->
+    <div class="container mx-auto px-4 py-8">
+        
+        <!-- Header con estadísticas -->
+        <div class="mb-8">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800 flex items-center">
+                        <i class="fas fa-users mr-3 text-red-600"></i>Gestión de Clientes
+                    </h1>
+                    <p class="text-gray-600 mt-2">Administra la información de los clientes del taller</p>
+                </div>
+                
+                <div class="flex flex-wrap gap-4">
+                    <!-- Total de clientes -->
+                    <div class="bg-white rounded-lg shadow-custom p-4 border border-gray-200">
+                        <div class="flex items-center">
+                            <div class="bg-blue-100 p-3 rounded-lg mr-4">
+                                <i class="fas fa-user-friends text-blue-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-500 text-sm">Clientes Totales</p>
+                                <p class="text-2xl font-bold text-gray-800" th:text="${listaClientes.size()}">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Botón nuevo cliente -->
+                    <a th:href="@{/clientes/nuevo}" 
+                       class="inline-flex items-center px-5 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 transition duration-200 shadow-md hover:shadow-lg font-medium">
+                        <i class="fas fa-user-plus mr-2"></i> Nuevo Cliente
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Mensajes Flash -->
+            <div th:if="${mensaje}" 
+                 th:classappend="${tipoMensaje == 'success'} ? 'bg-green-50 border-l-4 border-green-500' : 'bg-red-50 border-l-4 border-red-500'"
+                 class="p-4 mb-6">
+                <div class="flex items-center">
+                    <i th:classappend="${tipoMensaje == 'success'} ? 'fas fa-check-circle text-green-500' : 'fas fa-exclamation-circle text-red-500'" 
+                       class="mr-3"></i>
+                    <p th:text="${mensaje}" class="font-medium"></p>
+                </div>
+            </div>
+        </div>
 
-<a href="/clientes/nuevo">➕ Registrar Nuevo Cliente</a>
+        <!-- Tarjeta de la tabla -->
+        <div class="bg-white shadow-xl rounded-lg overflow-hidden border border-gray-200">
+            
+            <!-- Header de la tabla -->
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-700">
+                            <i class="fas fa-list mr-2 text-red-500"></i>Lista de Clientes Registrados
+                        </h2>
+                        <p class="text-sm text-gray-500 mt-1" th:if="${listaClientes.size() > 0}">
+                            Mostrando <span class="font-medium" th:text="${listaClientes.size()}"></span> cliente(s)
+                        </p>
+                    </div>
+                    
+                    <!-- Barra de búsqueda (opcional) -->
+                    <div class="w-full md:w-auto">
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <i class="fas fa-search text-gray-400"></i>
+                            </div>
+                            <input type="text" 
+                                   id="searchInput" 
+                                   placeholder="Buscar cliente..." 
+                                   class="w-full md:w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-200"
+                                   onkeyup="filtrarTabla()">
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-<table>
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Nombre Completo</th>
-            <th>DNI/RUC</th>
-            <th>Correo</th>
-            <th>Teléfono</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
+            <!-- Tabla de clientes -->
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                <div class="flex items-center">
+                                    <i class="fas fa-hashtag mr-2"></i> ID
+                                </div>
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                <div class="flex items-center">
+                                    <i class="fas fa-user mr-2"></i> Cliente
+                                </div>
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                <div class="flex items-center">
+                                    <i class="fas fa-id-card mr-2"></i> Documento
+                                </div>
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                <div class="flex items-center">
+                                    <i class="fas fa-envelope mr-2"></i> Contacto
+                                </div>
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                <div class="flex items-center">
+                                    <i class="fas fa-calendar-alt mr-2"></i> Registro
+                                </div>
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                <div class="flex items-center">
+                                    <i class="fas fa-cogs mr-2"></i> Acciones
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200" id="tablaClientes">
+                        <tr th:each="cliente : ${listaClientes}" 
+                            class="table-row-hover transition duration-150">
+                            
+                            <!-- ID -->
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="text-sm font-medium text-gray-900" th:text="${cliente.idCliente}"></span>
+                            </td>
+                            
+                            <!-- Nombre Completo -->
+                            <td class="px-6 py-4">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-10 w-10">
+                                        <div class="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
+                                            <i class="fas fa-user text-red-600"></i>
+                                        </div>
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900">
+                                            <span th:text="${cliente.nombre + ' ' + cliente.apellidos}"></span>
+                                        </div>
+                                        <div class="text-xs text-gray-500" th:if="${cliente.direccion}">
+                                            <i class="fas fa-map-marker-alt mr-1"></i>
+                                            <span th:text="${cliente.direccion}"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            
+                            <!-- Documento -->
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900" th:text="${cliente.dniRuc}"></div>
+                                <div class="text-xs text-gray-500">
+                                    <span th:if="${#strings.length(cliente.dniRuc) == 8}" 
+                                          class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full">DNI</span>
+                                    <span th:if="${#strings.length(cliente.dniRuc) == 11}"
+                                          class="px-2 py-1 bg-green-100 text-green-800 rounded-full">RUC</span>
+                                </div>
+                            </td>
+                            
+                            <!-- Contacto -->
+                            <td class="px-6 py-4">
+                                <div class="text-sm text-gray-900">
+                                    <i class="fas fa-envelope mr-2 text-gray-400"></i>
+                                    <span th:text="${cliente.correo}"></span>
+                                </div>
+                                <div class="text-sm text-gray-600 mt-1">
+                                    <i class="fas fa-phone mr-2 text-gray-400"></i>
+                                    <span th:text="${cliente.telefono}"></span>
+                                </div>
+                            </td>
+                            
+                            <!-- Fecha Registro (si tienes el campo) -->
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">
+                                    <i class="far fa-calendar mr-2"></i>
+                                    <span th:if="${cliente.fechaRegistro}" 
+                                          th:text="${#temporals.format(cliente.fechaRegistro, 'dd/MM/yyyy')}">
+                                    </span>
+                                    <span th:unless="${cliente.fechaRegistro}">--/--/----</span>
+                                </div>
+                                <div class="text-xs text-gray-500 mt-1">
+                                    <span class="px-2 py-1 bg-gray-100 text-gray-800 rounded-full">
+                                        <i class="fas fa-car mr-1"></i>
+                                        <span th:text="${cliente.vehiculos != null ? cliente.vehiculos.size() : 0}"></span> vehículos
+                                    </span>
+                                </div>
+                            </td>
+                            
+                            <!-- Acciones -->
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <div class="flex items-center space-x-2">
+                                    <!-- Botón Editar -->
+                                    <a th:href="@{'/clientes/editar/' + ${cliente.idCliente}}"
+                                       class="inline-flex items-center px-3 py-2 border border-blue-300 rounded-lg text-blue-700 bg-white hover:bg-blue-50 hover:border-blue-400 transition duration-200"
+                                       title="Editar cliente">
+                                        <i class="fas fa-edit mr-1"></i> Editar
+                                    </a>
+                                    
+                                    <!-- Botón Vehículos -->
+                                    <a th:href="@{'/vehiculos?clienteId=' + ${cliente.idCliente}}"
+                                       class="inline-flex items-center px-3 py-2 border border-green-300 rounded-lg text-green-700 bg-white hover:bg-green-50 hover:border-green-400 transition duration-200"
+                                       title="Ver vehículos">
+                                        <i class="fas fa-car mr-1"></i> Vehículos
+                                    </a>
+                                    
+                                    <!-- Botón Eliminar -->
+                                    <form th:action="@{'/clientes/eliminar/' + ${cliente.idCliente}}"
+                                          method="post"
+                                          class="inline"
+                                          onsubmit="return confirmarEliminacion()">
+                                        <button type="submit"
+                                                class="inline-flex items-center px-3 py-2 border border-red-300 rounded-lg text-red-700 bg-white hover:bg-red-50 hover:border-red-400 transition duration-200"
+                                                title="Eliminar cliente">
+                                            <i class="fas fa-trash-alt mr-1"></i> Eliminar
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <!-- Mensaje si no hay clientes -->
+                        <tr th:if="${listaClientes.isEmpty()}">
+                            <td colspan="6" class="px-6 py-12 text-center">
+                                <div class="text-gray-400">
+                                    <i class="fas fa-users text-4xl mb-4"></i>
+                                    <h3 class="text-lg font-medium text-gray-500 mb-2">No hay clientes registrados</h3>
+                                    <p class="text-gray-400 mb-6">Comienza agregando tu primer cliente al sistema</p>
+                                    <a th:href="@{/clientes/nuevo}" 
+                                       class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-200">
+                                        <i class="fas fa-user-plus mr-2"></i> Registrar Primer Cliente
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
 
-    <tbody>
-        <tr th:each="cliente : ${listaClientes}">
-            <td th:text="${cliente.idCliente}"></td>
+            <!-- Footer de la tabla -->
+            <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+                <div class="flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
+                    <div>
+                        <span class="font-medium" th:text="${listaClientes.size()}"></span> cliente(s) en total
+                    </div>
+                    <div class="mt-2 md:mt-0">
+                        <!-- Aquí podrías agregar paginación si necesitas -->
+                        <span class="text-gray-400">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Sistema GaragePro - Gestión de Clientes
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-            <td th:text="${cliente.nombre + ' ' + cliente.apellidos}"></td>
+        <!-- Notas informativas -->
+        <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div class="flex items-center mb-2">
+                    <i class="fas fa-lightbulb text-blue-500 mr-3 text-xl"></i>
+                    <h4 class="font-semibold text-blue-800">Consejo</h4>
+                </div>
+                <p class="text-sm text-blue-700">
+                    Mantén actualizada la información de contacto de tus clientes para notificaciones importantes.
+                </p>
+            </div>
+            
+            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div class="flex items-center mb-2">
+                    <i class="fas fa-chart-line text-green-500 mr-3 text-xl"></i>
+                    <h4 class="font-semibold text-green-800">Estadística</h4>
+                </div>
+                <p class="text-sm text-green-700">
+                    Los clientes satisfechos regresan en promedio 3 veces al año para mantenimiento.
+                </p>
+            </div>
+            
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                <div class="flex items-center mb-2">
+                    <i class="fas fa-exclamation-triangle text-red-500 mr-3 text-xl"></i>
+                    <h4 class="font-semibold text-red-800">Importante</h4>
+                </div>
+                <p class="text-sm text-red-700">
+                    La eliminación de un cliente también eliminará sus vehículos y órdenes asociadas.
+                </p>
+            </div>
+        </div>
 
-            <td th:text="${cliente.dniRuc}"></td>
+    </div> <!-- Fin del contenedor principal -->
 
-            <td th:text="${cliente.correo}"></td>
-
-            <td th:text="${cliente.telefono}"></td>
-
-            <td class="acciones">
-                <a th:href="@{'/clientes/editar/' + ${cliente.idCliente}}">✏ Editar</a>
-
-                <form th:action="@{'/clientes/eliminar/' + ${cliente.idCliente}}"
-                      method="post"
-                      style="display:inline;">
-                    <button type="submit" onclick="return confirm('¿Eliminar cliente?');">
-                        🗑 Eliminar
-                    </button>
-                </form>
-            </td>
-        </tr>
-    </tbody>
-</table>
+    <!-- Scripts para funcionalidades -->
+    <script>
+        // Función para filtrar la tabla
+        function filtrarTabla() {
+            const input = document.getElementById('searchInput');
+            const filter = input.value.toUpperCase();
+            const table = document.getElementById('tablaClientes');
+            const rows = table.getElementsByTagName('tr');
+            
+            for (let i = 0; i < rows.length; i++) {
+                const cells = rows[i].getElementsByTagName('td');
+                let mostrar = false;
+                
+                for (let j = 0; j < cells.length; j++) {
+                    const cell = cells[j];
+                    if (cell) {
+                        const textValue = cell.textContent || cell.innerText;
+                        if (textValue.toUpperCase().indexOf(filter) > -1) {
+                            mostrar = true;
+                            break;
+                        }
+                    }
+                }
+                
+                rows[i].style.display = mostrar ? '' : 'none';
+            }
+        }
+        
+        // Función para confirmar eliminación
+        function confirmarEliminacion() {
+            return confirm('¿Está seguro de eliminar este cliente?\n\n⚠️ Esta acción también eliminará todos los vehículos y órdenes asociadas.\n⚠️ Esta acción no se puede deshacer.');
+        }
+        
+        // Inicializar tooltips si usas alguna librería
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Lista de clientes cargada - GaragePro');
+            
+            // Agregar efecto a botones
+            const botones = document.querySelectorAll('button, a[href]');
+            botones.forEach(boton => {
+                boton.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-1px)';
+                });
+                boton.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+        });
+    </script>
 
 </body>
 </html>

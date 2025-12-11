@@ -3,55 +3,234 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Formulario Vehículo</title>
+    <title th:text="${vehiculo.idVehiculo} == null ? 'Registrar Vehículo' : 'Editar Vehículo'">Formulario Vehículo</title>
+    
+    <!-- Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        .form-input:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+        .transition-all {
+            transition: all 0.2s ease-in-out;
+        }
+    </style>
 </head>
-<body>
+<body class="bg-gray-50 min-h-screen">
 
-<h1 th:text="${vehiculo.idVehiculo} == null ? 'Registrar Vehículo' : 'Editar Vehículo'"></h1>
+    <!-- Navbar -->
+    <nav class="bg-blue-800 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a th:href="@{/}" class="text-xl font-bold flex items-center">
+                <i class="fas fa-car mr-2"></i> GaragePro
+            </a>
+            <div class="text-sm">
+                <a th:href="@{/vehiculos}" class="hover:text-blue-200 flex items-center">
+                    <i class="fas fa-arrow-left mr-1"></i> Volver a Vehículos
+                </a>
+            </div>
+        </div>
+    </nav>
 
-<a href="/vehiculos">⬅ Volver a la lista</a>
-<br><br>
+    <!-- Contenedor principal -->
+    <div class="container mx-auto px-4 py-8 max-w-3xl">
+        
+        <!-- Tarjeta del formulario -->
+        <div class="bg-white shadow-xl rounded-lg overflow-hidden border border-gray-200">
+            
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-green-600 to-green-700 text-white px-6 py-4">
+                <div class="flex items-center">
+                    <i class="fas fa-car-alt text-2xl mr-3"></i>
+                    <h1 class="text-2xl font-bold" th:text="${vehiculo.idVehiculo} == null ? 'Registrar Nuevo Vehículo' : 'Editar Vehículo'"></h1>
+                </div>
+                <p class="text-green-100 mt-1">
+                    Complete la información del vehículo y seleccione su propietario.
+                </p>
+            </div>
 
-<!-- Mostrar error -->
-<p th:if="${error}" style="color:red;" th:text="${error}"></p>
+            <!-- Mensaje de error -->
+            <div th:if="${error}" class="bg-red-50 border-l-4 border-red-500 p-4 mx-6 mt-6">
+                <div class="flex items-center">
+                    <i class="fas fa-exclamation-circle text-red-500 mr-3"></i>
+                    <p class="text-red-700 font-medium" th:text="${error}"></p>
+                </div>
+            </div>
 
-<!-- FORMULARIO CON th:object -->
-<form th:action="@{/vehiculos/guardar}" th:object="${vehiculo}" method="post">
+            <!-- Formulario -->
+            <form th:action="@{/vehiculos/guardar}" th:object="${vehiculo}" method="post" class="p-6">
+                <input type="hidden" th:field="*{idVehiculo}" />
 
-    <!-- ID oculto -->
-    <input type="hidden" th:field="*{idVehiculo}" />
+                <!-- Grid de 2 columnas -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <!-- Placa -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700">
+                            <i class="fas fa-tag mr-1 text-green-500"></i>
+                            Placa *
+                        </label>
+                        <input type="text" 
+                               th:field="*{placa}"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg 
+                                      focus:ring-2 focus:ring-green-500 focus:border-green-500 
+                                      transition-all form-input"
+                               placeholder="Ej: ABC-123"
+                               required
+                               maxlength="10">
+                        <p class="text-xs text-gray-500">Placa de rodaje del vehículo</p>
+                    </div>
 
-    <label>Placa:</label><br>
-    <input type="text" th:field="*{placa}" required />
-    <br><br>
+                    <!-- Marca -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700">
+                            <i class="fas fa-industry mr-1 text-green-500"></i>
+                            Marca *
+                        </label>
+                        <input type="text" 
+                               th:field="*{marca}"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg 
+                                      focus:ring-2 focus:ring-green-500 focus:border-green-500 
+                                      transition-all form-input"
+                               placeholder="Ej: Toyota, Nissan, Hyundai"
+                               required>
+                        <p class="text-xs text-gray-500">Fabricante del vehículo</p>
+                    </div>
 
-    <label>Marca:</label><br>
-    <input type="text" th:field="*{marca}" required />
-    <br><br>
+                    <!-- Modelo -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700">
+                            <i class="fas fa-car mr-1 text-green-500"></i>
+                            Modelo *
+                        </label>
+                        <input type="text" 
+                               th:field="*{modelo}"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg 
+                                      focus:ring-2 focus:ring-green-500 focus:border-green-500 
+                                      transition-all form-input"
+                               placeholder="Ej: Corolla, Civic, Hilux"
+                               required>
+                        <p class="text-xs text-gray-500">Modelo específico del vehículo</p>
+                    </div>
 
-    <label>Modelo:</label><br>
-    <input type="text" th:field="*{modelo}" required />
-    <br><br>
+                    <!-- Año de Fabricación -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700">
+                            <i class="fas fa-calendar-alt mr-1 text-green-500"></i>
+                            Año de Fabricación *
+                        </label>
+                        <input type="number" 
+                               th:field="*{anoFabricacion}"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg 
+                                      focus:ring-2 focus:ring-green-500 focus:border-green-500 
+                                      transition-all form-input"
+                               min="1900" 
+                               max="2100"
+                               placeholder="Ej: 2020"
+                               required>
+                        <p class="text-xs text-gray-500">Año entre 1900 y 2100</p>
+                    </div>
 
-    <label>Año de Fabricación:</label><br>
-    <input type="number" th:field="*{anoFabricacion}" min="1900" max="2100" required />
-    <br><br>
+                    <!-- Cliente (ocupa 2 columnas) -->
+                    <div class="space-y-2 md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700">
+                            <i class="fas fa-user mr-1 text-green-500"></i>
+                            Propietario (Cliente) *
+                        </label>
+                        <select th:field="*{cliente.idCliente}"
+                                class="w-full md:w-2/3 px-4 py-2 border border-gray-300 rounded-lg 
+                                       focus:ring-2 focus:ring-green-500 focus:border-green-500 
+                                       transition-all form-input"
+                                required>
+                            <option value="" disabled selected>Seleccione un cliente</option>
+                            <option th:each="cli : ${clientes}"
+                                    th:value="${cli.idCliente}"
+                                    th:text="${cli.nombre + ' ' + cli.apellidos + ' - DNI: ' + cli.dniRuc}">
+                            </option>
+                        </select>
+                        <div class="flex items-center text-sm text-gray-600 mt-2">
+                            <i class="fas fa-info-circle mr-2 text-green-500"></i>
+                            <p>Si el cliente no está en la lista, regístrelo primero en 
+                               <a th:href="@{/clientes/nuevo}" class="text-green-600 hover:text-green-800 font-medium">Clientes → Nuevo</a>
+                            </p>
+                        </div>
+                    </div>
 
-    <label>Cliente:</label><br>
-    <select th:field="*{cliente.idCliente}" required>
-        <option value="" disabled>Seleccione un cliente</option>
+                </div> <!-- Fin del grid -->
 
-        <!-- Lista de clientes -->
-        <option th:each="cli : ${clientes}"
-                th:value="${cli.idCliente}"
-                th:text="${cli.nombre + ' ' + cli.apellidos}">
-        </option>
-    </select>
+                <!-- Botones de acción -->
+                <div class="flex flex-wrap justify-end gap-4 mt-8 pt-6 border-t border-gray-200">
+                    
+                    <!-- Botón Cancelar -->
+                    <a th:href="@{/vehiculos}" 
+                       class="px-6 py-2 border border-gray-300 rounded-lg 
+                              text-gray-700 hover:bg-gray-50 hover:border-gray-400 
+                              transition-all flex items-center">
+                        <i class="fas fa-times mr-2"></i>
+                        Cancelar
+                    </a>
+                    
+                    <!-- Botón Guardar -->
+                    <button type="submit"
+                            class="px-6 py-2 bg-gradient-to-r from-green-600 to-green-700 
+                                   text-white rounded-lg hover:from-green-700 hover:to-green-800 
+                                   transition-all shadow-md hover:shadow-lg flex items-center">
+                        <i class="fas fa-save mr-2"></i>
+                        <span th:text="${vehiculo.idVehiculo} == null ? 'Registrar Vehículo' : 'Actualizar Vehículo'">
+                            Guardar
+                        </span>
+                    </button>
+                </div>
 
-    <br><br>
+            </form>
 
-    <button type="submit">Guardar</button>
-</form>
+            <!-- Footer informativo -->
+            <div class="bg-gray-50 px-6 py-4 border-t border-gray-200">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                        <span>Los campos con * son obligatorios</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-database text-green-500 mr-2"></i>
+                        <span>Información almacenada en SQL Server</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-shield-alt text-green-500 mr-2"></i>
+                        <span>Datos protegidos y seguros</span>
+                    </div>
+                </div>
+            </div>
+
+        </div> <!-- Fin de la tarjeta -->
+
+    </div> <!-- Fin del contenedor principal -->
+
+    <!-- Script para mejoras -->
+    <script>
+        // Validar año en tiempo real
+        document.querySelector('input[th\\:field="*{anoFabricacion}"]')?.addEventListener('blur', function() {
+            const year = parseInt(this.value);
+            const currentYear = new Date().getFullYear();
+            
+            if (year && (year < 1900 || year > currentYear + 1)) {
+                this.classList.add('border-red-500', 'bg-red-50');
+                // Podrías mostrar un mensaje
+            } else {
+                this.classList.remove('border-red-500', 'bg-red-50');
+            }
+        });
+
+        // Auto-mayúsculas para placa
+        document.querySelector('input[th\\:field="*{placa}"]')?.addEventListener('input', function() {
+            this.value = this.value.toUpperCase();
+        });
+
+        console.log('Formulario de vehículo cargado con Tailwind');
+    </script>
 
 </body>
 </html>

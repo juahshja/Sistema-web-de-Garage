@@ -20,14 +20,14 @@ public class ClienteController {
     @GetMapping
     public String listarClientes(Model model) {
         model.addAttribute("listaClientes", clienteService.obtenerTodosClientes());
-        return "clientes-list"; // carga clientes-list.html
-    }
+         return "cliente/clientes-list";           // ✅ DESPUÉS
+     }
 
     // FORMULARIO PARA CREAR NUEVO CLIENTE
     @GetMapping("/nuevo")
     public String formularioNuevoCliente(Model model) {
         model.addAttribute("cliente", new Cliente());
-        return "cliente-form"; // carga cliente-form.html
+        return "cliente/cliente-form";            // ✅ DESPUÉS
     }
 
     // GUARDAR CLIENTE (nuevo o editado)
@@ -39,7 +39,7 @@ public class ClienteController {
         } catch (Exception e) {
             model.addAttribute("cliente", cliente);
             model.addAttribute("errorMensaje", e.getMessage());
-            return "cliente-form";
+        return "cliente/cliente-form";            // ✅ DESPUÉS
         }
     }
 
@@ -50,7 +50,7 @@ public class ClienteController {
 
         if (cliente.isPresent()) {
             model.addAttribute("cliente", cliente.get());
-            return "cliente-form";
+return "cliente/cliente-form";            // ✅ DESPUÉS
         } else {
             return "redirect:/clientes";
         }

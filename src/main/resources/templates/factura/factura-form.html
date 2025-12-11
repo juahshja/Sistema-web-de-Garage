@@ -3,47 +3,390 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Formulario Factura</title>
+    <title th:text="${factura.idFactura == null ? 'Registrar Factura' : 'Editar Factura'}">Formulario Factura</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        .form-input:focus, .form-select:focus {
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.3) !important;
+            border-color: #ef4444 !important;
+        }
+        
+        .moneda::before {
+            content: "S/ ";
+            color: #6b7280;
+            font-weight: 500;
+        }
+        
+        .calculado {
+            background-color: #fef2f2 !important;
+            font-weight: 600 !important;
+        }
+    </style>
 </head>
-<body>
+<body class="bg-gray-50 min-h-screen">
 
-<h1 th:text="${factura.idFactura == null ? 'Registrar Factura' : 'Editar Factura'}"></h1>
+    <!-- Navbar -->
+    <nav class="bg-red-700 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a th:href="@{/}" class="text-xl font-bold flex items-center">
+                <i class="fas fa-car mr-2"></i> GaragePro
+            </a>
+            <div class="text-sm">
+                <a th:href="@{/facturas}" class="hover:text-red-200 flex items-center">
+                    <i class="fas fa-arrow-left mr-1"></i> Volver a Facturas
+                </a>
+            </div>
+        </div>
+    </nav>
 
-<a href="/facturas">⬅ Volver</a>
-<br><br>
+    <!-- Contenedor principal -->
+    <div class="container mx-auto px-4 py-8 max-w-3xl">
+        
+        <!-- Tarjeta del formulario -->
+        <div class="bg-white shadow-xl rounded-lg overflow-hidden border border-gray-200">
+            
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-red-600 to-red-700 text-white px-6 py-4">
+                <div class="flex items-center">
+                    <i class="fas fa-file-invoice-dollar text-2xl mr-3"></i>
+                    <h1 class="text-2xl font-bold" th:text="${factura.idFactura == null ? 'Registrar Nueva Factura' : 'Editar Factura'}"></h1>
+                </div>
+                <p class="text-red-100 mt-1">
+                    Gestión de facturación y documentación comercial.
+                </p>
+            </div>
 
-<p th:if="${error}" style="color:red;" th:text="${error}"></p>
+            <!-- Mensaje de error -->
+            <div th:if="${error}" class="bg-red-50 border-l-4 border-red-500 p-4 mx-6 mt-6">
+                <div class="flex items-center">
+                    <i class="fas fa-exclamation-circle text-red-500 mr-3"></i>
+                    <p class="text-red-700 font-medium" th:text="${error}"></p>
+                </div>
+            </div>
 
-<form action="/facturas/guardar" method="post">
+            <!-- Formulario -->
+            <form th:action="@{/facturas/guardar}" method="post" class="p-6">
+                
+                <!-- ID oculto -->
+                <input type="hidden" name="idFactura" th:value="${factura.idFactura}">
 
-    <input type="hidden" name="idFactura" th:value="${factura.idFactura}">
+                <!-- Grid de 2 columnas -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <!-- Número de Factura -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700">
+                            <i class="fas fa-hashtag mr-1 text-red-500"></i>
+                            Número de Factura *
+                        </label>
+                        <input id="numeroFactura" 
+                               name="numeroFactura" 
+                               type="text"
+                               th:value="${factura.numeroFactura}"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg 
+                                      focus:ring-2 focus:ring-red-500 focus:border-red-500 
+                                      transition duration-200 form-input"
+                               placeholder="Ej: F001-00001"
+                               required>
+                        <p class="text-xs text-gray-500">Número correlativo de facturación</p>
+                    </div>
 
-    <label for="numeroFactura">Número de factura:</label><br>
-    <input id="numeroFactura" name="numeroFactura" type="text" required
-           th:value="${factura.numeroFactura}">
-    <br><br>
+                    <!-- Estado -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700">
+                            <i class="fas fa-clipboard-check mr-1 text-red-500"></i>
+                            Estado *
+                        </label>
+                        <select id="estado" 
+                                name="estado" 
+                                required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg 
+                                       focus:ring-2 focus:ring-red-500 focus:border-red-500 
+                                       transition duration-200 form-select">
+                            <option value="PENDIENTE" th:selected="${factura.estado == 'PENDIENTE'}" 
+                                    class="text-yellow-700 bg-yellow-50">⏳ PENDIENTE</option>
+                            <option value="PAGADA" th:selected="${factura.estado == 'PAGADA'}" 
+                                    class="text-green-700 bg-green-50">✅ PAGADA</option>
+                            <option value="ANULADA" th:selected="${factura.estado == 'ANULADA'}" 
+                                    class="text-gray-700 bg-gray-50">❌ ANULADA</option>
+                        </select>
+                        <div class="flex flex-wrap gap-2 mt-2">
+                            <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">
+                                Pendiente
+                            </span>
+                            <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
+                                Pagada
+                            </span>
+                            <span class="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs">
+                                Anulada
+                            </span>
+                        </div>
+                    </div>
 
-    <label for="subtotal">Subtotal:</label><br>
-    <input id="subtotal" name="subtotal" type="number" step="0.01" required
-           th:value="${factura.subtotal}">
-    <br><br>
+                    <!-- Subtotal -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700">
+                            <i class="fas fa-calculator mr-1 text-red-500"></i>
+                            Subtotal (S/) *
+                        </label>
+                        <div class="relative">
+                            <input id="subtotal" 
+                                   name="subtotal" 
+                                   type="number" 
+                                   step="0.01"
+                                   th:value="${factura.subtotal}"
+                                   class="w-full px-4 py-2 pl-8 border border-gray-300 rounded-lg 
+                                          focus:ring-2 focus:ring-red-500 focus:border-red-500 
+                                          transition duration-200 form-input moneda"
+                                   placeholder="0.00"
+                                   min="0"
+                                   required
+                                   onchange="calcularTotales()">
+                            <div class="absolute left-3 top-2.5 text-gray-500">S/</div>
+                        </div>
+                        <p class="text-xs text-gray-500">Monto antes de impuestos</p>
+                    </div>
 
-    <label for="estado">Estado:</label><br>
-    <select id="estado" name="estado" required>
-        <option value="PENDIENTE" th:selected="${factura.estado == 'PENDIENTE'}">PENDIENTE</option>
-        <option value="PAGADA" th:selected="${factura.estado == 'PAGADA'}">PAGADA</option>
-        <option value="ANULADA" th:selected="${factura.estado == 'ANULADA'}">ANULADA</option>
-    </select>
-    <br><br>
+                    <!-- Método de Pago -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700">
+                            <i class="fas fa-credit-card mr-1 text-red-500"></i>
+                            Método de Pago
+                        </label>
+                        <input id="metodoPago" 
+                               name="metodoPago" 
+                               type="text"
+                               th:value="${factura.metodoPago}"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg 
+                                      focus:ring-2 focus:ring-red-500 focus:border-red-500 
+                                      transition duration-200 form-input"
+                               placeholder="Ej: Efectivo, Tarjeta, Transferencia">
+                        <p class="text-xs text-gray-500">Forma de pago utilizada</p>
+                    </div>
 
-    <label for="metodoPago">Método de pago:</label><br>
-    <input id="metodoPago" name="metodoPago" type="text"
-           th:value="${factura.metodoPago}">
-    <br><br>
+                </div> <!-- Fin del grid -->
 
-    <button type="submit">Guardar</button>
+                <!-- Cálculos automáticos (IGV y Total) -->
+                <div class="mt-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-calculator mr-2 text-red-500"></i>
+                        Cálculos Automáticos
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <!-- Subtotal (mostrado) -->
+                        <div class="space-y-1">
+                            <label class="block text-sm font-medium text-gray-600">Subtotal</label>
+                            <div class="px-3 py-2 bg-white border border-gray-300 rounded text-lg font-semibold text-gray-800">
+                                S/ <span id="subtotalDisplay">0.00</span>
+                            </div>
+                        </div>
+                        
+                        <!-- IGV (18%) -->
+                        <div class="space-y-1">
+                            <label class="block text-sm font-medium text-gray-600">IGV (18%)</label>
+                            <div class="px-3 py-2 bg-white border border-gray-300 rounded text-lg font-semibold text-gray-800 calculado">
+                                S/ <span id="igvDisplay">0.00</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Total -->
+                        <div class="space-y-1">
+                            <label class="block text-sm font-medium text-gray-600">Total a Pagar</label>
+                            <div class="px-3 py-2 bg-white border-2 border-red-300 rounded text-lg font-bold text-red-700">
+                                S/ <span id="totalDisplay">0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Campos ocultos para IGV y Total (para enviar al servidor) -->
+                    <input type="hidden" id="igvHidden" name="igv" th:value="${factura.igv}">
+                    <input type="hidden" id="totalHidden" name="total" th:value="${factura.total}">
+                </div>
 
-</form>
+                <!-- Información adicional (si está editando) -->
+                <div th:if="${factura.idFactura != null}" class="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <h4 class="text-md font-semibold text-blue-800 mb-2 flex items-center">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        Información de la Factura
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                        <div>
+                            <span class="text-gray-600">Fecha de Emisión:</span>
+                            <span class="font-medium" th:text="${#temporals.format(factura.fechaEmision, 'dd/MM/yyyy HH:mm')}"></span>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">ID Factura:</span>
+                            <span class="font-medium" th:text="${factura.idFactura}"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Observaciones (opcional) -->
+                <div class="space-y-2 mt-6">
+                    <label class="block text-sm font-medium text-gray-700">
+                        <i class="fas fa-sticky-note mr-1 text-red-500"></i>
+                        Observaciones
+                    </label>
+                    <textarea name="observaciones"
+                              rows="3"
+                              class="w-full px-4 py-2 border border-gray-300 rounded-lg 
+                                     focus:ring-2 focus:ring-red-500 focus:border-red-500 
+                                     transition duration-200 form-textarea"
+                              placeholder="Notas adicionales sobre la factura..."
+                              th:text="${factura.observaciones}"></textarea>
+                    <p class="text-xs text-gray-500">Información adicional o comentarios</p>
+                </div>
+
+                <!-- Botones de acción -->
+                <div class="flex flex-wrap justify-end gap-4 mt-8 pt-6 border-t border-gray-200">
+                    
+                    <!-- Botón Cancelar -->
+                    <a th:href="@{/facturas}" 
+                       class="px-6 py-2 border border-gray-300 rounded-lg 
+                              text-gray-700 hover:bg-gray-50 hover:border-gray-400 
+                              transition duration-200 flex items-center">
+                        <i class="fas fa-times mr-2"></i>
+                        Cancelar
+                    </a>
+                    
+                    <!-- Botón Guardar -->
+                    <button type="submit"
+                            class="px-6 py-2 bg-gradient-to-r from-red-600 to-red-700 
+                                   text-white rounded-lg hover:from-red-700 hover:to-red-800 
+                                   transition duration-200 shadow-md hover:shadow-lg flex items-center">
+                        <i class="fas fa-save mr-2"></i>
+                        <span th:text="${factura.idFactura == null ? 'Generar Factura' : 'Actualizar Factura'}">
+                            Guardar
+                        </span>
+                    </button>
+                </div>
+
+            </form>
+
+            <!-- Footer informativo -->
+            <div class="bg-gray-50 px-6 py-4 border-t border-gray-200">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
+                    <div class="flex items-center">
+                        <i class="fas fa-file-contract text-red-500 mr-2"></i>
+                        <span>Documento válido para fines tributarios</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-percentage text-red-500 mr-2"></i>
+                        <span>IGV calculado automáticamente al 18%</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-lock text-red-500 mr-2"></i>
+                        <span>Información fiscal protegida y auditada</span>
+                    </div>
+                </div>
+            </div>
+
+        </div> <!-- Fin de la tarjeta -->
+
+    </div> <!-- Fin del contenedor principal -->
+
+    <!-- Scripts para cálculos en tiempo real -->
+    <script>
+        // Elementos del DOM
+        const subtotalInput = document.getElementById('subtotal');
+        const subtotalDisplay = document.getElementById('subtotalDisplay');
+        const igvDisplay = document.getElementById('igvDisplay');
+        const totalDisplay = document.getElementById('totalDisplay');
+        const igvHidden = document.getElementById('igvHidden');
+        const totalHidden = document.getElementById('totalHidden');
+        const estadoSelect = document.getElementById('estado');
+        
+        // Constante de IGV (18%)
+        const IGV_PORCENTAJE = 0.18;
+        
+        // Función para calcular IGV y Total
+        function calcularTotales() {
+            // Obtener subtotal
+            const subtotal = parseFloat(subtotalInput.value) || 0;
+            
+            // Calcular IGV (18%)
+            const igv = subtotal * IGV_PORCENTAJE;
+            
+            // Calcular Total
+            const total = subtotal + igv;
+            
+            // Actualizar displays
+            subtotalDisplay.textContent = subtotal.toFixed(2);
+            igvDisplay.textContent = igv.toFixed(2);
+            totalDisplay.textContent = total.toFixed(2);
+            
+            // Actualizar campos ocultos para enviar al servidor
+            igvHidden.value = igv.toFixed(2);
+            totalHidden.value = total.toFixed(2);
+            
+            // Validar que el subtotal sea positivo
+            if (subtotal < 0) {
+                subtotalInput.classList.add('border-red-500', 'bg-red-50');
+            } else {
+                subtotalInput.classList.remove('border-red-500', 'bg-red-50');
+            }
+        }
+        
+        // Cambiar estilo según estado
+        function actualizarEstadoEstilo() {
+            const colores = {
+                'PENDIENTE': 'border-yellow-300 bg-yellow-50 text-yellow-700',
+                'PAGADA': 'border-green-300 bg-green-50 text-green-700',
+                'ANULADA': 'border-gray-300 bg-gray-50 text-gray-700'
+            };
+            
+            // Remover todas las clases
+            Object.values(colores).forEach(clases => {
+                clases.split(' ').forEach(clase => {
+                    estadoSelect.classList.remove(clase);
+                });
+            });
+            
+            // Agregar clases correspondientes
+            if (colores[estadoSelect.value]) {
+                colores[estadoSelect.value].split(' ').forEach(clase => {
+                    estadoSelect.classList.add(clase);
+                });
+            }
+        }
+        
+        // Formatear número de factura (auto-mayúsculas)
+        function formatearNumeroFactura() {
+            const input = document.getElementById('numeroFactura');
+            if (input) {
+                input.value = input.value.toUpperCase().replace(/\s+/g, '');
+            }
+        }
+        
+        // Agregar event listeners
+        if (subtotalInput) {
+            subtotalInput.addEventListener('input', calcularTotales);
+            subtotalInput.addEventListener('change', calcularTotales);
+        }
+        
+        if (estadoSelect) {
+            estadoSelect.addEventListener('change', actualizarEstadoEstilo);
+        }
+        
+        document.getElementById('numeroFactura')?.addEventListener('input', formatearNumeroFactura);
+        
+        // Inicializar al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            calcularTotales();
+            actualizarEstadoEstilo();
+            
+            // Si hay datos precargados (edición), formatear número
+            formatearNumeroFactura();
+            
+            console.log('Formulario de factura cargado con cálculos automáticos');
+        });
+    </script>
 
 </body>
 </html>

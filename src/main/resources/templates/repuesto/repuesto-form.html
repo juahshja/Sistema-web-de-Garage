@@ -3,59 +3,407 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${repuesto.idRepuesto == null ? 'Registrar Repuesto' : 'Editar Repuesto'}"></title>
+    <title th:text="${repuesto.idRepuesto == null ? 'Registrar Repuesto' : 'Editar Repuesto'}">Formulario Repuesto</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.3) !important;
+            border-color: #a855f7 !important;
+        }
+        
+        .stock-bajo {
+            background-color: #fef2f2 !important;
+            border-color: #fca5a5 !important;
+        }
+        
+        .stock-normal {
+            background-color: #f0f9ff !important;
+            border-color: #7dd3fc !important;
+        }
+    </style>
 </head>
+<body class="bg-gray-50 min-h-screen">
 
-<body>
+    <!-- Navbar -->
+    <nav class="bg-purple-800 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a th:href="@{/}" class="text-xl font-bold flex items-center">
+                <i class="fas fa-car mr-2"></i> GaragePro
+            </a>
+            <div class="text-sm">
+                <a th:href="@{/repuestos}" class="hover:text-purple-200 flex items-center">
+                    <i class="fas fa-arrow-left mr-1"></i> Volver a Repuestos
+                </a>
+            </div>
+        </div>
+    </nav>
 
-<h1 th:text="${repuesto.idRepuesto == null ? 'Registrar Repuesto' : 'Editar Repuesto'}"></h1>
+    <!-- Contenedor principal -->
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        
+        <!-- Tarjeta del formulario -->
+        <div class="bg-white shadow-xl rounded-lg overflow-hidden border border-gray-200">
+            
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-purple-600 to-purple-700 text-white px-6 py-4">
+                <div class="flex items-center">
+                    <i class="fas fa-cogs text-2xl mr-3"></i>
+                    <h1 class="text-2xl font-bold" th:text="${repuesto.idRepuesto == null ? 'Registrar Nuevo Repuesto' : 'Editar Repuesto'}"></h1>
+                </div>
+                <p class="text-purple-100 mt-1">
+                    Gestión de inventario de repuestos para el taller.
+                </p>
+            </div>
 
-<a href="/repuestos">⬅ Volver</a>
-<br><br>
+            <!-- Formulario -->
+            <form th:action="@{/repuestos/guardar}" method="post" class="p-6">
+                
+                <!-- ID oculto -->
+                <input type="hidden" name="idRepuesto" th:value="${repuesto.idRepuesto}">
 
-<form action="/repuestos/guardar" method="post">
+                <!-- Grid de 2 columnas -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <!-- Nombre -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700">
+                            <i class="fas fa-tag mr-1 text-purple-500"></i>
+                            Nombre del Repuesto *
+                        </label>
+                        <input type="text" 
+                               name="nombre" 
+                               th:value="${repuesto.nombre}"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg 
+                                      focus:ring-2 focus:ring-purple-500 focus:border-purple-500 
+                                      transition duration-200 form-input"
+                               placeholder="Ej: Filtro de aceite, Pastillas de freno"
+                               required>
+                        <p class="text-xs text-gray-500">Nombre comercial del repuesto</p>
+                    </div>
 
-    <input type="hidden" name="idRepuesto" th:value="${repuesto.idRepuesto}">
+                    <!-- Código de Barras -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700">
+                            <i class="fas fa-barcode mr-1 text-purple-500"></i>
+                            Código de Barras
+                        </label>
+                        <input type="text" 
+                               name="codigoBarras" 
+                               th:value="${repuesto.codigoBarras}"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg 
+                                      focus:ring-2 focus:ring-purple-500 focus:border-purple-500 
+                                      transition duration-200 form-input"
+                               placeholder="Ej: 123456789012">
+                        <p class="text-xs text-gray-500">Código único para inventario</p>
+                    </div>
 
-    <label>Nombre:</label><br>
-    <input type="text" name="nombre" th:value="${repuesto.nombre}" required><br><br>
+                    <!-- Precio Costo -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700">
+                            <i class="fas fa-money-bill-wave mr-1 text-purple-500"></i>
+                            Precio Costo ($) *
+                        </label>
+                        <input type="number" 
+                               step="0.01" 
+                               name="precioCosto" 
+                               th:value="${repuesto.precioCosto}"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg 
+                                      focus:ring-2 focus:ring-purple-500 focus:border-purple-500 
+                                      transition duration-200 form-input"
+                               placeholder="0.00"
+                               min="0"
+                               required>
+                        <p class="text-xs text-gray-500">Precio de compra al proveedor</p>
+                    </div>
 
-    <label>Descripción:</label><br>
-    <textarea name="descripcion" rows="3" th:text="${repuesto.descripcion}"></textarea><br><br>
+                    <!-- Precio Venta -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700">
+                            <i class="fas fa-tags mr-1 text-purple-500"></i>
+                            Precio Venta ($) *
+                        </label>
+                        <input type="number" 
+                               step="0.01" 
+                               name="precioVenta" 
+                               th:value="${repuesto.precioVenta}"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg 
+                                      focus:ring-2 focus:ring-purple-500 focus:border-purple-500 
+                                      transition duration-200 form-input"
+                               placeholder="0.00"
+                               min="0"
+                               required>
+                        <p class="text-xs text-gray-500">Precio de venta al cliente</p>
+                    </div>
 
-    <label>Código de Barras:</label><br>
-    <input type="text" name="codigoBarras" th:value="${repuesto.codigoBarras}"><br><br>
+                    <!-- Stock Actual -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700">
+                            <i class="fas fa-boxes mr-1 text-purple-500"></i>
+                            Stock Actual *
+                        </label>
+                        <input type="number" 
+                               name="stockActual" 
+                               th:value="${repuesto.stockActual}"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg 
+                                      focus:ring-2 focus:ring-purple-500 focus:border-purple-500 
+                                      transition duration-200 form-input stock-input"
+                               placeholder="0"
+                               min="0"
+                               required
+                               onchange="validarStock()">
+                        <p class="text-xs text-gray-500">Cantidad disponible en inventario</p>
+                    </div>
 
-    <label>Stock Actual:</label><br>
-    <input type="number" name="stockActual" th:value="${repuesto.stockActual}" required><br><br>
+                    <!-- Stock Mínimo -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700">
+                            <i class="fas fa-exclamation-triangle mr-1 text-purple-500"></i>
+                            Stock Mínimo *
+                        </label>
+                        <input type="number" 
+                               name="stockMinimo" 
+                               th:value="${repuesto.stockMinimo}"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg 
+                                      focus:ring-2 focus:ring-purple-500 focus:border-purple-500 
+                                      transition duration-200 form-input"
+                               placeholder="0"
+                               min="0"
+                               required>
+                        <p class="text-xs text-gray-500">Nivel mínimo para alerta de reorden</p>
+                    </div>
 
-    <label>Stock Mínimo:</label><br>
-    <input type="number" name="stockMinimo" th:value="${repuesto.stockMinimo}" required><br><br>
+                    <!-- Ubicación en almacén -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700">
+                            <i class="fas fa-warehouse mr-1 text-purple-500"></i>
+                            Ubicación en almacén
+                        </label>
+                        <input type="text" 
+                               name="ubicacionAlmacen" 
+                               th:value="${repuesto.ubicacionAlmacen}"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg 
+                                      focus:ring-2 focus:ring-purple-500 focus:border-purple-500 
+                                      transition duration-200 form-input"
+                               placeholder="Ej: Pasillo A, Estante 3, Nivel 2">
+                        <p class="text-xs text-gray-500">Ubicación física en el almacén</p>
+                    </div>
 
-    <label>Precio Costo:</label><br>
-    <input type="number" step="0.01" name="precioCosto" th:value="${repuesto.precioCosto}" required><br><br>
+                    <!-- Proveedor -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700">
+                            <i class="fas fa-truck mr-1 text-purple-500"></i>
+                            Proveedor
+                        </label>
+                        <select name="proveedor.idProveedor"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg 
+                                       focus:ring-2 focus:ring-purple-500 focus:border-purple-500 
+                                       transition duration-200 form-select">
+                            <option value="">-- Seleccione un proveedor --</option>
+                            <option th:each="prov : ${proveedores}"
+                                    th:value="${prov.idProveedor}"
+                                    th:selected="${repuesto.proveedor != null && repuesto.proveedor.idProveedor == prov.idProveedor}"
+                                    th:text="${prov.razonSocial}">
+                            </option>
+                        </select>
+                        <div class="flex items-center text-sm text-gray-600 mt-2">
+                            <i class="fas fa-info-circle mr-2 text-purple-500"></i>
+                            <p>Si el proveedor no está listado, regístrelo en 
+                               <a th:href="@{/proveedores/nuevo}" class="text-purple-600 hover:text-purple-800 font-medium">Proveedores → Nuevo</a>
+                            </p>
+                        </div>
+                    </div>
 
-    <label>Precio Venta:</label><br>
-    <input type="number" step="0.01" name="precioVenta" th:value="${repuesto.precioVenta}" required><br><br>
+                </div> <!-- Fin del grid -->
 
-    <label>Ubicación en almacén:</label><br>
-    <input type="text" name="ubicacionAlmacen" th:value="${repuesto.ubicacionAlmacen}"><br><br>
+                <!-- Descripción (ocupa 2 columnas) -->
+                <div class="space-y-2 mt-6">
+                    <label class="block text-sm font-medium text-gray-700">
+                        <i class="fas fa-align-left mr-1 text-purple-500"></i>
+                        Descripción del Repuesto
+                    </label>
+                    <textarea name="descripcion" 
+                              rows="3"
+                              class="w-full px-4 py-2 border border-gray-300 rounded-lg 
+                                     focus:ring-2 focus:ring-purple-500 focus:border-purple-500 
+                                     transition duration-200 form-textarea"
+                              placeholder="Describa características, especificaciones técnicas o aplicaciones del repuesto..."
+                              th:text="${repuesto.descripcion}"></textarea>
+                    <p class="text-xs text-gray-500">Información detallada sobre el repuesto</p>
+                </div>
 
-    <label>Proveedor:</label><br>
-    <select name="proveedor.idProveedor">
-        <option value="">-- Seleccione --</option>
+                <!-- Indicadores de inventario (calculados) -->
+                <div class="mt-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+                        <i class="fas fa-chart-bar mr-2 text-purple-500"></i>
+                        Indicadores de Inventario
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="text-center p-3 bg-white rounded border">
+                            <div class="text-2xl font-bold text-gray-800" id="diferenciaStock">0</div>
+                            <div class="text-sm text-gray-600">Diferencia (Actual - Mínimo)</div>
+                        </div>
+                        <div class="text-center p-3 bg-white rounded border">
+                            <div class="text-2xl font-bold text-gray-800" id="valorInventario">$0.00</div>
+                            <div class="text-sm text-gray-600">Valor en Inventario</div>
+                        </div>
+                        <div class="text-center p-3 bg-white rounded border">
+                            <div class="text-2xl font-bold" id="estadoStock">⚠️</div>
+                            <div class="text-sm text-gray-600">Estado del Stock</div>
+                        </div>
+                    </div>
+                </div>
 
-        <option th:each="prov : ${proveedores}"
-                th:value="${prov.idProveedor}"
-                th:selected="${repuesto.proveedor != null && repuesto.proveedor.idProveedor == prov.idProveedor}"
-                th:text="${prov.razonSocial}">
-        </option>
-    </select>
-    <br><br>
+                <!-- Botones de acción -->
+                <div class="flex flex-wrap justify-end gap-4 mt-8 pt-6 border-t border-gray-200">
+                    
+                    <!-- Botón Cancelar -->
+                    <a th:href="@{/repuestos}" 
+                       class="px-6 py-2 border border-gray-300 rounded-lg 
+                              text-gray-700 hover:bg-gray-50 hover:border-gray-400 
+                              transition duration-200 flex items-center">
+                        <i class="fas fa-times mr-2"></i>
+                        Cancelar
+                    </a>
+                    
+                    <!-- Botón Guardar -->
+                    <button type="submit"
+                            class="px-6 py-2 bg-gradient-to-r from-purple-600 to-purple-700 
+                                   text-white rounded-lg hover:from-purple-700 hover:to-purple-800 
+                                   transition duration-200 shadow-md hover:shadow-lg flex items-center">
+                        <i class="fas fa-save mr-2"></i>
+                        <span th:text="${repuesto.idRepuesto == null ? 'Registrar Repuesto' : 'Actualizar Repuesto'}">
+                            Guardar
+                        </span>
+                    </button>
+                </div>
 
-    <button type="submit">Guardar</button>
+            </form>
 
-</form>
+            <!-- Footer informativo -->
+            <div class="bg-gray-50 px-6 py-4 border-t border-gray-200">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
+                    <div class="flex items-center">
+                        <i class="fas fa-calculator text-purple-500 mr-2"></i>
+                        <span>Los precios incluyen cálculo automático de márgenes</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-bell text-purple-500 mr-2"></i>
+                        <span>Alertas automáticas cuando stock está bajo mínimo</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-chart-line text-purple-500 mr-2"></i>
+                        <span>Control de inventario en tiempo real</span>
+                    </div>
+                </div>
+            </div>
+
+        </div> <!-- Fin de la tarjeta -->
+
+    </div> <!-- Fin del contenedor principal -->
+
+    <!-- Scripts para cálculos en tiempo real -->
+    <script>
+        // Elementos del DOM
+        const stockActualInput = document.querySelector('input[name="stockActual"]');
+        const stockMinimoInput = document.querySelector('input[name="stockMinimo"]');
+        const precioCostoInput = document.querySelector('input[name="precioCosto"]');
+        const precioVentaInput = document.querySelector('input[name="precioVenta"]');
+        
+        // Elementos de resultados
+        const diferenciaStock = document.getElementById('diferenciaStock');
+        const valorInventario = document.getElementById('valorInventario');
+        const estadoStock = document.getElementById('estadoStock');
+        
+        // Función para calcular y actualizar indicadores
+        function actualizarIndicadores() {
+            // Obtener valores
+            const stockActual = parseFloat(stockActualInput?.value) || 0;
+            const stockMinimo = parseFloat(stockMinimoInput?.value) || 0;
+            const precioCosto = parseFloat(precioCostoInput?.value) || 0;
+            
+            // Calcular diferencia
+            const diferencia = stockActual - stockMinimo;
+            diferenciaStock.textContent = diferencia;
+            
+            // Calcular valor en inventario
+            const valor = stockActual * precioCosto;
+            valorInventario.textContent = `$${valor.toFixed(2)}`;
+            
+            // Determinar estado del stock
+            if (stockActual === 0) {
+                estadoStock.textContent = "❌ AGOTADO";
+                estadoStock.className = "text-2xl font-bold text-red-600";
+                stockActualInput?.classList.add('stock-bajo');
+                stockActualInput?.classList.remove('stock-normal');
+            } else if (stockActual <= stockMinimo) {
+                estadoStock.textContent = "⚠️ BAJO";
+                estadoStock.className = "text-2xl font-bold text-yellow-600";
+                stockActualInput?.classList.add('stock-bajo');
+                stockActualInput?.classList.remove('stock-normal');
+            } else {
+                estadoStock.textContent = "✅ NORMAL";
+                estadoStock.className = "text-2xl font-bold text-green-600";
+                stockActualInput?.classList.add('stock-normal');
+                stockActualInput?.classList.remove('stock-bajo');
+            }
+            
+            // Auto-calcular precio de venta si es nuevo repuesto
+            if (precioCosto > 0 && (!precioVentaInput.value || precioVentaInput.value === "0")) {
+                const margen = 1.35; // 35% de margen
+                const precioCalculado = precioCosto * margen;
+                precioVentaInput.value = precioCalculado.toFixed(2);
+            }
+        }
+        
+        // Validar que precio de venta sea mayor al costo
+        function validarPrecioVenta() {
+            const costo = parseFloat(precioCostoInput?.value) || 0;
+            const venta = parseFloat(precioVentaInput?.value) || 0;
+            
+            if (venta > 0 && venta < costo) {
+                precioVentaInput.classList.add('border-red-500', 'bg-red-50');
+                // Podrías mostrar una alerta
+            } else {
+                precioVentaInput.classList.remove('border-red-500', 'bg-red-50');
+            }
+        }
+        
+        // Validar stock
+        function validarStock() {
+            const stockActual = parseFloat(stockActualInput?.value) || 0;
+            const stockMinimo = parseFloat(stockMinimoInput?.value) || 0;
+            
+            if (stockActual < 0) {
+                stockActualInput.classList.add('border-red-500', 'bg-red-50');
+            } else {
+                stockActualInput.classList.remove('border-red-500', 'bg-red-50');
+            }
+            
+            if (stockMinimo < 0) {
+                stockMinimoInput.classList.add('border-red-500', 'bg-red-50');
+            } else {
+                stockMinimoInput.classList.remove('border-red-500', 'bg-red-50');
+            }
+        }
+        
+        // Agregar event listeners
+        if (stockActualInput) stockActualInput.addEventListener('input', actualizarIndicadores);
+        if (stockMinimoInput) stockMinimoInput.addEventListener('input', actualizarIndicadores);
+        if (precioCostoInput) precioCostoInput.addEventListener('input', actualizarIndicadores);
+        if (precioVentaInput) precioVentaInput.addEventListener('input', validarPrecioVenta);
+        
+        // Inicializar indicadores al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            actualizarIndicadores();
+            validarStock();
+            console.log('Formulario de repuestos cargado con cálculos en tiempo real');
+        });
+    </script>
 
 </body>
 </html>

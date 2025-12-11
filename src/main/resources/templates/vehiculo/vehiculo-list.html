@@ -3,48 +3,573 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Vehículos</title>
+    <title>Gestión de Vehículos - GaragePro</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        .table-row-hover:hover {
+            background-color: #f9fafb !important;
+        }
+        
+        .shadow-custom {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        .brand-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .toyota { background-color: #e11d48; }
+        .nissan { background-color: #1d4ed8; }
+        .ford { background-color: #0d9488; }
+        .chevrolet { background-color: #ea580c; }
+        .hyundai { background-color: #4f46e5; }
+        .kia { background-color: #059669; }
+        .mazda { background-color: #dc2626; }
+        .default { background-color: #6b7280; }
+    </style>
 </head>
-<body>
+<body class="bg-gray-50 min-h-screen">
 
-    <h1>Vehículos Registrados</h1>
+    <!-- Navbar -->
+    <nav class="bg-red-700 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a th:href="@{/}" class="text-xl font-bold flex items-center">
+                <i class="fas fa-car mr-2"></i> GaragePro
+            </a>
+            <div class="text-sm">
+                <a th:href="@{/clientes}" class="hover:text-red-200 flex items-center">
+                    <i class="fas fa-arrow-left mr-1"></i> Volver a Clientes
+                </a>
+            </div>
+        </div>
+    </nav>
 
-    <a href="/vehiculos/nuevo">➕ Registrar Vehículo</a>
-
-    <br><br>
-
-    <table border="1" cellpadding="8">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Placa</th>
-                <th>Marca</th>
-                <th>Modelo</th>
-                <th>Año</th>
-                <th>Cliente</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-
-        <tbody>
-            <tr th:each="veh : ${vehiculos}">
-                <td th:text="${veh.idVehiculo}"></td>
-                <td th:text="${veh.placa}"></td>
-                <td th:text="${veh.marca}"></td>
-                <td th:text="${veh.modelo}"></td>
-                <td th:text="${veh.anoFabricacion}"></td>
-                <td th:text="${veh.cliente.nombre + ' ' + veh.cliente.apellidos}"></td>
-                <td>
-                    <a th:href="@{'/vehiculos/editar/' + ${veh.idVehiculo}}">✏ Editar</a>
-                    &nbsp;|&nbsp;
-                    <a th:href="@{'/vehiculos/eliminar/' + ${veh.idVehiculo}}"
-                       onclick="return confirm('¿Eliminar este vehículo?');">
-                        🗑 Eliminar
+    <!-- Contenedor principal -->
+    <div class="container mx-auto px-4 py-8">
+        
+        <!-- Header con estadísticas -->
+        <div class="mb-8">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800 flex items-center">
+                        <i class="fas fa-car-side mr-3 text-red-600"></i>Gestión de Vehículos
+                    </h1>
+                    <p class="text-gray-600 mt-2">Administra el parque automotriz de tus clientes</p>
+                </div>
+                
+                <div class="flex flex-wrap gap-4">
+                    <!-- Estadísticas -->
+                    <div class="bg-white rounded-lg shadow-custom p-4 border border-gray-200">
+                        <div class="flex items-center">
+                            <div class="bg-red-100 p-3 rounded-lg mr-4">
+                                <i class="fas fa-tachometer-alt text-red-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-500 text-sm">Vehículos Totales</p>
+                                <p class="text-2xl font-bold text-gray-800" th:text="${vehiculos.size()}">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Botón nuevo vehículo -->
+                    <a th:href="@{/vehiculos/nuevo}" 
+                       class="inline-flex items-center px-5 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 transition duration-200 shadow-md hover:shadow-lg font-medium">
+                        <i class="fas fa-car mr-2"></i> Nuevo Vehículo
                     </a>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+                </div>
+            </div>
+            
+            <!-- Filtros rápidos -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <!-- Búsqueda por placa -->
+                <div class="bg-white p-4 rounded-lg shadow-custom border border-gray-200">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-search mr-1"></i> Buscar por Placa
+                    </label>
+                    <input type="text" 
+                           id="searchPlaca"
+                           placeholder="Ej: ABC-123" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-200"
+                           onkeyup="filtrarPorPlaca()">
+                </div>
+                
+                <!-- Filtro por marca -->
+                <div class="bg-white p-4 rounded-lg shadow-custom border border-gray-200">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-tag mr-1"></i> Filtrar por Marca
+                    </label>
+                    <select id="filterMarca" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-200"
+                            onchange="filtrarPorMarca()">
+                        <option value="">Todas las marcas</option>
+                        <option value="Toyota">Toyota</option>
+                        <option value="Nissan">Nissan</option>
+                        <option value="Ford">Ford</option>
+                        <option value="Chevrolet">Chevrolet</option>
+                        <option value="Hyundai">Hyundai</option>
+                        <option value="Kia">Kia</option>
+                        <option value="Mazda">Mazda</option>
+                    </select>
+                </div>
+                
+                <!-- Filtro por año -->
+                <div class="bg-white p-4 rounded-lg shadow-custom border border-gray-200">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-calendar-alt mr-1"></i> Rango de Años
+                    </label>
+                    <div class="flex gap-2">
+                        <input type="number" 
+                               id="minYear" 
+                               placeholder="Desde" 
+                               min="1990" 
+                               max="2024"
+                               class="w-1/2 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-200">
+                        <input type="number" 
+                               id="maxYear" 
+                               placeholder="Hasta" 
+                               min="1990" 
+                               max="2024"
+                               class="w-1/2 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-200">
+                    </div>
+                </div>
+                
+                <!-- Botón limpiar filtros -->
+                <div class="flex items-end">
+                    <button onclick="limpiarFiltros()"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-400 transition duration-200 flex items-center justify-center">
+                        <i class="fas fa-times mr-2"></i> Limpiar Filtros
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta de la tabla -->
+        <div class="bg-white shadow-xl rounded-lg overflow-hidden border border-gray-200">
+            
+            <!-- Header de la tabla -->
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-700">
+                            <i class="fas fa-list mr-2 text-red-500"></i>Vehículos Registrados
+                        </h2>
+                        <p class="text-sm text-gray-500 mt-1" th:if="${vehiculos.size() > 0}">
+                            Mostrando <span id="contadorFiltrado" class="font-medium" th:text="${vehiculos.size()}"></span> vehículo(s)
+                        </p>
+                    </div>
+                    
+                    <!-- Información adicional -->
+                    <div class="flex items-center space-x-4">
+                        <div class="text-sm text-gray-600">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            <span id="marcasUnicas">0</span> marcas diferentes
+                        </div>
+                        <div class="text-sm text-gray-600">
+                            <i class="fas fa-user-friends mr-1"></i>
+                            <span id="clientesUnicos">0</span> propietarios
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabla de vehículos -->
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                <div class="flex items-center">
+                                    <i class="fas fa-car mr-2"></i> Vehículo
+                                </div>
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                <div class="flex items-center">
+                                    <i class="fas fa-id-card mr-2"></i> Placa
+                                </div>
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                <div class="flex items-center">
+                                    <i class="fas fa-cogs mr-2"></i> Especificaciones
+                                </div>
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                <div class="flex items-center">
+                                    <i class="fas fa-user-tie mr-2"></i> Propietario
+                                </div>
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                <div class="flex items-center">
+                                    <i class="fas fa-history mr-2"></i> Historial
+                                </div>
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                <div class="flex items-center">
+                                    <i class="fas fa-cogs mr-2"></i> Acciones
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200" id="tablaVehiculos">
+                        <tr th:each="veh : ${vehiculos}" 
+                            class="table-row-hover transition duration-150"
+                            th:data-marca="${veh.marca}"
+                            th:data-anio="${veh.anoFabricacion}"
+                            th:data-placa="${veh.placa}">
+                            
+                            <!-- Información del vehículo -->
+                            <td class="px-6 py-4">
+                                <div class="flex items-center">
+                                    <!-- Logo de marca -->
+                                    <div class="flex-shrink-0 mr-4">
+                                        <div th:classappend="${veh.marca == 'Toyota'} ? 'brand-logo toyota' :
+                                                             ${veh.marca == 'Nissan'} ? 'brand-logo nissan' :
+                                                             ${veh.marca == 'Ford'} ? 'brand-logo ford' :
+                                                             ${veh.marca == 'Chevrolet'} ? 'brand-logo chevrolet' :
+                                                             ${veh.marca == 'Hyundai'} ? 'brand-logo hyundai' :
+                                                             ${veh.marca == 'Kia'} ? 'brand-logo kia' :
+                                                             ${veh.marca == 'Mazda'} ? 'brand-logo mazda' : 'brand-logo default'"
+                                             th:text="${#strings.substring(veh.marca, 0, 1)}">
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <div class="text-sm font-semibold text-gray-900">
+                                            <span th:text="${veh.marca} + ' ' + ${veh.modelo}"></span>
+                                        </div>
+                                        <div class="text-xs text-gray-500">
+                                            <span th:if="${veh.color}" class="mr-3">
+                                                <i class="fas fa-palette mr-1"></i>
+                                                <span th:text="${veh.color}"></span>
+                                            </span>
+                                            <span th:if="${veh.kilometraje}">
+                                                <i class="fas fa-tachometer-alt mr-1"></i>
+                                                <span th:text="${#numbers.formatInteger(veh.kilometraje, 0, 'POINT')}"></span> km
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            
+                            <!-- Placa -->
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-center">
+                                    <span class="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-lg font-bold text-lg tracking-wider" 
+                                          th:text="${veh.placa}">
+                                    </span>
+                                    <div class="text-xs text-gray-500 mt-1">
+                                        <i class="fas fa-id-card-alt mr-1"></i>VIN: 
+                                        <span th:text="${veh.vin ?: 'No registrado'}"></span>
+                                    </div>
+                                </div>
+                            </td>
+                            
+                            <!-- Especificaciones -->
+                            <td class="px-6 py-4">
+                                <div class="space-y-1">
+                                    <div class="flex items-center text-sm">
+                                        <i class="fas fa-calendar-alt text-gray-400 mr-2 w-4"></i>
+                                        <span class="text-gray-700" th:text="${veh.anoFabricacion}"></span>
+                                        <span class="text-gray-500 ml-1">(Año)</span>
+                                    </div>
+                                    <div class="flex items-center text-sm" th:if="${veh.motor}">
+                                        <i class="fas fa-oil-can text-gray-400 mr-2 w-4"></i>
+                                        <span class="text-gray-700" th:text="${veh.motor}"></span>
+                                    </div>
+                                    <div class="flex items-center text-sm" th:if="${veh.transmision}">
+                                        <i class="fas fa-cogs text-gray-400 mr-2 w-4"></i>
+                                        <span class="text-gray-700" th:text="${veh.transmision}"></span>
+                                    </div>
+                                </div>
+                            </td>
+                            
+                            <!-- Propietario -->
+                            <td class="px-6 py-4">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-8 w-8">
+                                        <div class="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
+                                            <i class="fas fa-user text-gray-600 text-xs"></i>
+                                        </div>
+                                    </div>
+                                    <div class="ml-3">
+                                        <div class="text-sm font-medium text-gray-900">
+                                            <span th:text="${veh.cliente.nombre + ' ' + veh.cliente.apellidos}"></span>
+                                        </div>
+                                        <div class="text-xs text-gray-500">
+                                            <i class="fas fa-phone-alt mr-1"></i>
+                                            <span th:text="${veh.cliente.telefono}"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    <a th:href="@{'/clientes/editar/' + ${veh.cliente.idCliente}}"
+                                       class="text-xs text-blue-600 hover:text-blue-800 flex items-center">
+                                        <i class="fas fa-external-link-alt mr-1"></i> Ver cliente
+                                    </a>
+                                </div>
+                            </td>
+                            
+                            <!-- Historial -->
+                            <td class="px-6 py-4">
+                                <div class="space-y-2">
+                                    <div class="flex items-center justify-between text-sm">
+                                        <span class="text-gray-600">Órdenes:</span>
+                                        <span class="font-medium" th:text="${veh.ordenes != null ? veh.ordenes.size() : 0}"></span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-sm">
+                                        <span class="text-gray-600">Último servicio:</span>
+                                        <span class="text-gray-700">--/--/----</span>
+                                    </div>
+                                    <div>
+                                        <a th:href="@{'/ordenes/nuevo?vehiculoId=' + ${veh.idVehiculo}}"
+                                           class="text-xs text-red-600 hover:text-red-800 font-medium flex items-center">
+                                            <i class="fas fa-plus-circle mr-1"></i> Nueva orden
+                                        </a>
+                                    </div>
+                                </div>
+                            </td>
+                            
+                            <!-- Acciones -->
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <div class="flex flex-col space-y-2">
+                                    <!-- Botón Editar -->
+                                    <a th:href="@{'/vehiculos/editar/' + ${veh.idVehiculo}}"
+                                       class="inline-flex items-center px-3 py-2 border border-blue-300 rounded-lg text-blue-700 bg-white hover:bg-blue-50 hover:border-blue-400 transition duration-200 justify-center">
+                                        <i class="fas fa-edit mr-1"></i> Editar
+                                    </a>
+                                    
+                                    <!-- Botón Ver Órdenes -->
+                                    <a th:href="@{'/ordenes?vehiculoId=' + ${veh.idVehiculo}}"
+                                       class="inline-flex items-center px-3 py-2 border border-green-300 rounded-lg text-green-700 bg-white hover:bg-green-50 hover:border-green-400 transition duration-200 justify-center">
+                                        <i class="fas fa-clipboard-list mr-1"></i> Órdenes
+                                    </a>
+                                    
+                                    <!-- Botón Eliminar -->
+                                    <form th:action="@{'/vehiculos/eliminar/' + ${veh.idVehiculo}}"
+                                          method="post"
+                                          class="inline"
+                                          onsubmit="return confirmarEliminacionVehiculo()">
+                                        <button type="submit"
+                                                class="w-full inline-flex items-center px-3 py-2 border border-red-300 rounded-lg text-red-700 bg-white hover:bg-red-50 hover:border-red-400 transition duration-200 justify-center">
+                                            <i class="fas fa-trash-alt mr-1"></i> Eliminar
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <!-- Mensaje si no hay vehículos -->
+                        <tr th:if="${vehiculos.isEmpty()}">
+                            <td colspan="6" class="px-6 py-12 text-center">
+                                <div class="text-gray-400">
+                                    <i class="fas fa-car text-4xl mb-4"></i>
+                                    <h3 class="text-lg font-medium text-gray-500 mb-2">No hay vehículos registrados</h3>
+                                    <p class="text-gray-400 mb-6">Registra el primer vehículo de un cliente</p>
+                                    <a th:href="@{/vehiculos/nuevo}" 
+                                       class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-200">
+                                        <i class="fas fa-car mr-2"></i> Registrar Primer Vehículo
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Footer de la tabla -->
+            <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+                <div class="flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
+                    <div>
+                        <span class="font-medium" th:text="${vehiculos.size()}"></span> vehículo(s) registrado(s)
+                    </div>
+                    <div class="mt-2 md:mt-0 flex items-center space-x-4">
+                        <span class="text-gray-400">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Sistema GaragePro - Flota Automotriz
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resumen por marca -->
+        <div class="mt-8">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                <i class="fas fa-chart-pie mr-2 text-red-500"></i> Distribución por Marca
+            </h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+                <div class="bg-white p-4 rounded-lg shadow-custom border border-gray-200 text-center">
+                    <div class="text-sm text-gray-500">Toyota</div>
+                    <div class="text-2xl font-bold text-red-600" id="countToyota">0</div>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow-custom border border-gray-200 text-center">
+                    <div class="text-sm text-gray-500">Nissan</div>
+                    <div class="text-2xl font-bold text-blue-600" id="countNissan">0</div>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow-custom border border-gray-200 text-center">
+                    <div class="text-sm text-gray-500">Ford</div>
+                    <div class="text-2xl font-bold text-teal-600" id="countFord">0</div>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow-custom border border-gray-200 text-center">
+                    <div class="text-sm text-gray-500">Chevrolet</div>
+                    <div class="text-2xl font-bold text-orange-600" id="countChevrolet">0</div>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow-custom border border-gray-200 text-center">
+                    <div class="text-sm text-gray-500">Hyundai</div>
+                    <div class="text-2xl font-bold text-indigo-600" id="countHyundai">0</div>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow-custom border border-gray-200 text-center">
+                    <div class="text-sm text-gray-500">Kia</div>
+                    <div class="text-2xl font-bold text-green-600" id="countKia">0</div>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow-custom border border-gray-200 text-center">
+                    <div class="text-sm text-gray-500">Otras</div>
+                    <div class="text-2xl font-bold text-gray-600" id="countOther">0</div>
+                </div>
+            </div>
+        </div>
+
+    </div> <!-- Fin del contenedor principal -->
+
+    <!-- Scripts para funcionalidades -->
+    <script>
+        // Variables globales
+        let allVehicles = [];
+        
+        // Inicializar al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            // Guardar todos los vehículos
+            const rows = document.querySelectorAll('#tablaVehiculos tr[th\\:data-marca]');
+            allVehicles = Array.from(rows);
+            
+            // Calcular estadísticas
+            calcularEstadisticas();
+            
+            console.log('Lista de vehículos cargada - GaragePro');
+        });
+        
+        // Calcular estadísticas
+        function calcularEstadisticas() {
+            if (allVehicles.length === 0) return;
+            
+            // Contar por marca
+            const counts = {
+                Toyota: 0, Nissan: 0, Ford: 0, Chevrolet: 0,
+                Hyundai: 0, Kia: 0, Mazda: 0, Other: 0
+            };
+            
+            const marcasUnicas = new Set();
+            const clientesUnicos = new Set();
+            
+            allVehicles.forEach(row => {
+                const marca = row.getAttribute('th:data-marca') || row.getAttribute('data-marca');
+                if (marca) {
+                    marcasUnicas.add(marca);
+                    
+                    if (counts.hasOwnProperty(marca)) {
+                        counts[marca]++;
+                    } else {
+                        counts.Other++;
+                    }
+                }
+                
+                // Aquí podrías extraer el cliente si está en un atributo data
+            });
+            
+            // Actualizar contadores
+            document.getElementById('countToyota').textContent = counts.Toyota;
+            document.getElementById('countNissan').textContent = counts.Nissan;
+            document.getElementById('countFord').textContent = counts.Ford;
+            document.getElementById('countChevrolet').textContent = counts.Chevrolet;
+            document.getElementById('countHyundai').textContent = counts.Hyundai;
+            document.getElementById('countKia').textContent = counts.Kia;
+            document.getElementById('countOther').textContent = counts.Other;
+            
+            document.getElementById('marcasUnicas').textContent = marcasUnicas.size;
+            document.getElementById('clientesUnicos').textContent = clientesUnicos.size;
+        }
+        
+        // Filtrar por placa
+        function filtrarPorPlaca() {
+            const input = document.getElementById('searchPlaca');
+            const filter = input.value.toUpperCase();
+            
+            let visibleCount = 0;
+            
+            allVehicles.forEach(row => {
+                const placa = row.getAttribute('th:data-placa') || row.getAttribute('data-placa');
+                if (placa && placa.toUpperCase().includes(filter)) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            document.getElementById('contadorFiltrado').textContent = visibleCount;
+        }
+        
+        // Filtrar por marca
+        function filtrarPorMarca() {
+            const select = document.getElementById('filterMarca');
+            const filter = select.value;
+            
+            let visibleCount = 0;
+            
+            allVehicles.forEach(row => {
+                const marca = row.getAttribute('th:data-marca') || row.getAttribute('data-marca');
+                if (!filter || (marca && marca === filter)) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            document.getElementById('contadorFiltrado').textContent = visibleCount;
+        }
+        
+        // Limpiar filtros
+        function limpiarFiltros() {
+            document.getElementById('searchPlaca').value = '';
+            document.getElementById('filterMarca').value = '';
+            document.getElementById('minYear').value = '';
+            document.getElementById('maxYear').value = '';
+            
+            allVehicles.forEach(row => {
+                row.style.display = '';
+            });
+            
+            document.getElementById('contadorFiltrado').textContent = allVehicles.length;
+        }
+        
+        // Confirmar eliminación
+        function confirmarEliminacionVehiculo() {
+            return confirm('¿Está seguro de eliminar este vehículo?\n\n⚠️ Esta acción también eliminará todas las órdenes asociadas.\n⚠️ Esta acción no se puede deshacer.');
+        }
+        
+        // Agregar efectos hover
+        const botones = document.querySelectorAll('button, a[href]');
+        botones.forEach(boton => {
+            boton.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-1px)';
+            });
+            boton.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+    </script>
 
 </body>
 </html>
