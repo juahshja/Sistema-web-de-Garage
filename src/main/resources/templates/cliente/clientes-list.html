@@ -14,15 +14,6 @@
         .table-row-hover:hover {
             background-color: #f9fafb !important;
         }
-        
-        .status-active {
-            background-color: #10b981 !important;
-        }
-        
-        .status-inactive {
-            background-color: #ef4444 !important;
-        }
-        
         .shadow-custom {
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
@@ -82,10 +73,10 @@
             <!-- Mensajes Flash -->
             <div th:if="${mensaje}" 
                  th:classappend="${tipoMensaje == 'success'} ? 'bg-green-50 border-l-4 border-green-500' : 'bg-red-50 border-l-4 border-red-500'"
-                 class="p-4 mb-6">
+                 class="p-4 mb-6 rounded-lg">
                 <div class="flex items-center">
                     <i th:classappend="${tipoMensaje == 'success'} ? 'fas fa-check-circle text-green-500' : 'fas fa-exclamation-circle text-red-500'" 
-                       class="mr-3"></i>
+                       class="mr-3 text-xl"></i>
                     <p th:text="${mensaje}" class="font-medium"></p>
                 </div>
             </div>
@@ -106,7 +97,7 @@
                         </p>
                     </div>
                     
-                    <!-- Barra de búsqueda (opcional) -->
+                    <!-- Barra de búsqueda -->
                     <div class="w-full md:w-auto">
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -128,34 +119,22 @@
                     <thead class="bg-gray-100">
                         <tr>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                                <div class="flex items-center">
-                                    <i class="fas fa-hashtag mr-2"></i> ID
-                                </div>
+                                <i class="fas fa-hashtag mr-2"></i> ID
                             </th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                                <div class="flex items-center">
-                                    <i class="fas fa-user mr-2"></i> Cliente
-                                </div>
+                                <i class="fas fa-user mr-2"></i> Cliente
                             </th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                                <div class="flex items-center">
-                                    <i class="fas fa-id-card mr-2"></i> Documento
-                                </div>
+                                <i class="fas fa-id-card mr-2"></i> Documento
                             </th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                                <div class="flex items-center">
-                                    <i class="fas fa-envelope mr-2"></i> Contacto
-                                </div>
+                                <i class="fas fa-envelope mr-2"></i> Contacto
                             </th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                                <div class="flex items-center">
-                                    <i class="fas fa-calendar-alt mr-2"></i> Registro
-                                </div>
+                                <i class="fas fa-car mr-2"></i> Vehículos
                             </th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                                <div class="flex items-center">
-                                    <i class="fas fa-cogs mr-2"></i> Acciones
-                                </div>
+                                <i class="fas fa-cogs mr-2"></i> Acciones
                             </th>
                         </tr>
                     </thead>
@@ -180,10 +159,6 @@
                                         <div class="text-sm font-medium text-gray-900">
                                             <span th:text="${cliente.nombre + ' ' + cliente.apellidos}"></span>
                                         </div>
-                                        <div class="text-xs text-gray-500" th:if="${cliente.direccion}">
-                                            <i class="fas fa-map-marker-alt mr-1"></i>
-                                            <span th:text="${cliente.direccion}"></span>
-                                        </div>
                                     </div>
                                 </div>
                             </td>
@@ -191,7 +166,7 @@
                             <!-- Documento -->
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-gray-900" th:text="${cliente.dniRuc}"></div>
-                                <div class="text-xs text-gray-500">
+                                <div class="text-xs text-gray-500 mt-1">
                                     <span th:if="${#strings.length(cliente.dniRuc) == 8}" 
                                           class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full">DNI</span>
                                     <span th:if="${#strings.length(cliente.dniRuc) == 11}"
@@ -203,29 +178,20 @@
                             <td class="px-6 py-4">
                                 <div class="text-sm text-gray-900">
                                     <i class="fas fa-envelope mr-2 text-gray-400"></i>
-                                    <span th:text="${cliente.correo}"></span>
+                                    <span th:text="${cliente.correo != null && !cliente.correo.isEmpty()} ? ${cliente.correo} : 'Sin correo'"></span>
                                 </div>
                                 <div class="text-sm text-gray-600 mt-1">
                                     <i class="fas fa-phone mr-2 text-gray-400"></i>
-                                    <span th:text="${cliente.telefono}"></span>
+                                    <span th:text="${cliente.telefono != null && !cliente.telefono.isEmpty()} ? ${cliente.telefono} : 'Sin teléfono'"></span>
                                 </div>
                             </td>
                             
-                            <!-- Fecha Registro (si tienes el campo) -->
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">
-                                    <i class="far fa-calendar mr-2"></i>
-                                    <span th:if="${cliente.fechaRegistro}" 
-                                          th:text="${#temporals.format(cliente.fechaRegistro, 'dd/MM/yyyy')}">
-                                    </span>
-                                    <span th:unless="${cliente.fechaRegistro}">--/--/----</span>
-                                </div>
-                                <div class="text-xs text-gray-500 mt-1">
-                                    <span class="px-2 py-1 bg-gray-100 text-gray-800 rounded-full">
-                                        <i class="fas fa-car mr-1"></i>
-                                        <span th:text="${cliente.vehiculos != null ? cliente.vehiculos.size() : 0}"></span> vehículos
-                                    </span>
-                                </div>
+                            <!-- Vehículos -->
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <span class="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm font-medium">
+                                    <i class="fas fa-car mr-1"></i>
+                                    <span th:text="${cliente.vehiculos != null ? cliente.vehiculos.size() : 0}">0</span>
+                                </span>
                             </td>
                             
                             <!-- Acciones -->
@@ -236,13 +202,6 @@
                                        class="inline-flex items-center px-3 py-2 border border-blue-300 rounded-lg text-blue-700 bg-white hover:bg-blue-50 hover:border-blue-400 transition duration-200"
                                        title="Editar cliente">
                                         <i class="fas fa-edit mr-1"></i> Editar
-                                    </a>
-                                    
-                                    <!-- Botón Vehículos -->
-                                    <a th:href="@{'/vehiculos?clienteId=' + ${cliente.idCliente}}"
-                                       class="inline-flex items-center px-3 py-2 border border-green-300 rounded-lg text-green-700 bg-white hover:bg-green-50 hover:border-green-400 transition duration-200"
-                                       title="Ver vehículos">
-                                        <i class="fas fa-car mr-1"></i> Vehículos
                                     </a>
                                     
                                     <!-- Botón Eliminar -->
@@ -264,7 +223,7 @@
                         <tr th:if="${listaClientes.isEmpty()}">
                             <td colspan="6" class="px-6 py-12 text-center">
                                 <div class="text-gray-400">
-                                    <i class="fas fa-users text-4xl mb-4"></i>
+                                    <i class="fas fa-users text-6xl mb-4"></i>
                                     <h3 class="text-lg font-medium text-gray-500 mb-2">No hay clientes registrados</h3>
                                     <p class="text-gray-400 mb-6">Comienza agregando tu primer cliente al sistema</p>
                                     <a th:href="@{/clientes/nuevo}" 
@@ -285,7 +244,6 @@
                         <span class="font-medium" th:text="${listaClientes.size()}"></span> cliente(s) en total
                     </div>
                     <div class="mt-2 md:mt-0">
-                        <!-- Aquí podrías agregar paginación si necesitas -->
                         <span class="text-gray-400">
                             <i class="fas fa-info-circle mr-1"></i>
                             Sistema GaragePro - Gestión de Clientes
@@ -328,11 +286,11 @@
             </div>
         </div>
 
-    </div> <!-- Fin del contenedor principal -->
+    </div>
 
-    <!-- Scripts para funcionalidades -->
+    <!-- Scripts -->
     <script>
-        // Función para filtrar la tabla
+        // Filtrar tabla
         function filtrarTabla() {
             const input = document.getElementById('searchInput');
             const filter = input.value.toUpperCase();
@@ -358,25 +316,14 @@
             }
         }
         
-        // Función para confirmar eliminación
+        // Confirmar eliminación
         function confirmarEliminacion() {
             return confirm('¿Está seguro de eliminar este cliente?\n\n⚠️ Esta acción también eliminará todos los vehículos y órdenes asociadas.\n⚠️ Esta acción no se puede deshacer.');
         }
         
-        // Inicializar tooltips si usas alguna librería
+        // Inicialización
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Lista de clientes cargada - GaragePro');
-            
-            // Agregar efecto a botones
-            const botones = document.querySelectorAll('button, a[href]');
-            botones.forEach(boton => {
-                boton.addEventListener('mouseenter', function() {
-                    this.style.transform = 'translateY(-1px)';
-                });
-                boton.addEventListener('mouseleave', function() {
-                    this.style.transform = 'translateY(0)';
-                });
-            });
+            console.log('✅ Lista de clientes cargada correctamente');
         });
     </script>
 
