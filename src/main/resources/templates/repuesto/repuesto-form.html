@@ -61,7 +61,7 @@
             </div>
 
             <!-- Formulario -->
-            <form th:action="@{/repuestos/guardar}" method="post" class="p-6">
+<form th:action="@{/repuestos/guardar}" method="post" class="p-6" onsubmit="return validarRepuesto()">
                 
                 <!-- ID oculto -->
                 <input type="hidden" name="idRepuesto" th:value="${repuesto.idRepuesto}">
@@ -404,6 +404,7 @@
             console.log('Formulario de repuestos cargado con cálculos en tiempo real');
         });
     </script>
+<script src="/js/validaciones/repuestoValidacion.js"></script>
 
 </body>
 </html>
